@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 420" fill="none" role="img" aria-label="SEO category analysis">
+  <defs>
+    <linearGradient id="f-green" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#34d399"/>
+    </linearGradient>
+    <linearGradient id="f-bar" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#6ee7b7"/>
+    </linearGradient>
+    <filter id="f-shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#0f172a" flood-opacity="0.1"/>
+    </filter>
+    <filter id="f-soft" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="280" cy="210" rx="250" ry="185" fill="#ecfdf5" opacity="0.45"/>
+
+  <!-- main panel -->
+  <g filter="url(#f-shadow)">
+    <rect x="32" y="28" width="496" height="364" rx="18" fill="#ffffff" stroke="#e2e8f0"/>
+  </g>
+
+  <text x="56" y="64" fill="#0f172a" font-family="system-ui,sans-serif" font-size="15" font-weight="700">5-Category SEO Analysis</text>
+  <text x="56" y="82" fill="#64748b" font-family="system-ui,sans-serif" font-size="11">Letter grades across every pillar that affects rankings</text>
+
+  <!-- category cards row -->
+  <g font-family="system-ui,sans-serif">
+    <!-- On-Page -->
+    <g filter="url(#f-soft)" transform="translate(56,100)">
+      <rect width="84" height="108" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
+      <circle cx="42" cy="38" r="26" stroke="#e2e8f0" stroke-width="4" fill="none"/>
+      <circle cx="42" cy="38" r="26" stroke="url(#f-green)" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="163" stroke-dashoffset="16" transform="rotate(-90 42 38)"/>
+      <text x="42" y="44" text-anchor="middle" fill="#059669" font-size="16" font-weight="700">A-</text>
+      <text x="42" y="78" text-anchor="middle" fill="#64748b" font-size="8" font-weight="600">ON-PAGE</text>
+      <text x="42" y="92" text-anchor="middle" fill="#94a3b8" font-size="9">92/100</text>
+    </g>
+    <!-- Links -->
+    <g filter="url(#f-soft)" transform="translate(152,100)">
+      <rect width="84" height="108" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
+      <circle cx="42" cy="38" r="26" stroke="#e2e8f0" stroke-width="4" fill="none"/>
+      <circle cx="42" cy="38" r="26" stroke="url(#f-green)" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="163" stroke-dashoffset="20" transform="rotate(-90 42 38)"/>
+      <text x="42" y="44" text-anchor="middle" fill="#059669" font-size="16" font-weight="700">A-</text>
+      <text x="42" y="78" text-anchor="middle" fill="#64748b" font-size="8" font-weight="600">LINKS</text>
+      <text x="42" y="92" text-anchor="middle" fill="#94a3b8" font-size="9">88/100</text>
+    </g>
+    <!-- Usability -->
+    <g filter="url(#f-soft)" transform="translate(248,100)">
+      <rect width="84" height="108" rx="12" fill="#ffffff" stroke="#fde68a"/>
+      <circle cx="42" cy="38" r="26" stroke="#fde68a" stroke-width="4" fill="none"/>
+      <circle cx="42" cy="38" r="26" stroke="#f59e0b" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="163" stroke-dashoffset="65" transform="rotate(-90 42 38)"/>
+      <text x="42" y="44" text-anchor="middle" fill="#d97706" font-size="16" font-weight="700">C</text>
+      <text x="42" y="78" text-anchor="middle" fill="#64748b" font-size="8" font-weight="600">USABILITY</text>
+      <text x="42" y="92" text-anchor="middle" fill="#94a3b8" font-size="9">62/100</text>
+    </g>
+    <!-- Performance -->
+    <g filter="url(#f-soft)" transform="translate(344,100)">
+      <rect width="84" height="108" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
+      <circle cx="42" cy="38" r="26" stroke="#e2e8f0" stroke-width="4" fill="none"/>
+      <circle cx="42" cy="38" r="26" stroke="url(#f-green)" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="163" stroke-dashoffset="8" transform="rotate(-90 42 38)"/>
+      <text x="42" y="44" text-anchor="middle" fill="#059669" font-size="16" font-weight="700">A</text>
+      <text x="42" y="78" text-anchor="middle" fill="#64748b" font-size="8" font-weight="600">PERFORMANCE</text>
+      <text x="42" y="92" text-anchor="middle" fill="#94a3b8" font-size="9">94/100</text>
+    </g>
+    <!-- Social -->
+    <g filter="url(#f-soft)" transform="translate(440,100)">
+      <rect width="84" height="108" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
+      <circle cx="42" cy="38" r="26" stroke="#e2e8f0" stroke-width="4" fill="none"/>
+      <circle cx="42" cy="38" r="26" stroke="url(#f-green)" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="163" stroke-dashoffset="0" transform="rotate(-90 42 38)"/>
+      <text x="42" y="44" text-anchor="middle" fill="#059669" font-size="16" font-weight="700">A+</text>
+      <text x="42" y="78" text-anchor="middle" fill="#64748b" font-size="8" font-weight="600">SOCIAL</text>
+      <text x="42" y="92" text-anchor="middle" fill="#94a3b8" font-size="9">98/100</text>
+    </g>
+  </g>
+
+  <!-- bar chart comparison -->
+  <g filter="url(#f-soft)" transform="translate(56,228)">
+    <rect width="448" height="140" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="16" y="24" fill="#64748b" font-family="system-ui,sans-serif" font-size="9" font-weight="600" letter-spacing="0.06em">SCORE BREAKDOWN</text>
+
+    <!-- bars -->
+    <g transform="translate(24,40)">
+      <text x="0" y="10" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">On-Page</text>
+      <rect x="64" y="2" width="320" height="10" rx="5" fill="#e2e8f0"/>
+      <rect x="64" y="2" width="294" height="10" rx="5" fill="url(#f-bar)"/>
+
+      <text x="0" y="34" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Links</text>
+      <rect x="64" y="26" width="320" height="10" rx="5" fill="#e2e8f0"/>
+      <rect x="64" y="26" width="282" height="10" rx="5" fill="url(#f-bar)"/>
+
+      <text x="0" y="58" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Usability</text>
+      <rect x="64" y="50" width="320" height="10" rx="5" fill="#e2e8f0"/>
+      <rect x="64" y="50" width="198" height="10" rx="5" fill="#f59e0b"/>
+
+      <text x="0" y="82" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Performance</text>
+      <rect x="64" y="74" width="320" height="10" rx="5" fill="#e2e8f0"/>
+      <rect x="64" y="74" width="301" height="10" rx="5" fill="url(#f-bar)"/>
+
+      <text x="0" y="106" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Social</text>
+      <rect x="64" y="98" width="320" height="10" rx="5" fill="#e2e8f0"/>
+      <rect x="64" y="98" width="314" height="10" rx="5" fill="url(#f-bar)"/>
+    </g>
+  </g>
+</svg>

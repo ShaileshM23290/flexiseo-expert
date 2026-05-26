@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Audit {
+  id                 String             @id @default(auto()) @map("_id") @db.ObjectId
+  url                String
+  domain             String
+  status             String             @default("pending")
+  overallScore       Int                @default(0)
+  categoryScores     String             @default("{}")
+  pagesCrawled       Int                @default(0)
+  totalIssues        Int                @default(0)
+  criticalCount      Int                @default(0)
+  warningCount       Int                @default(0)
+  noticeCount        Int                @default(0)
+  passedCount        Int                @default(0)
+  performanceData    String?
+  socialSummary      String?
+  schemaSummary      String?
+  aiSummary          String?
+  aiActionPlan       String?
+  aiCategoryInsights String?
+  aiGeneratedAt      DateTime?
+  errorMessage       String?
+  clientIp           String?
+  userAgent          String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  completedAt        DateTime?
+  pages              AuditPage[]
+  issues             AuditIssue[]
+  recommendations    AIRecommendation[]
+
+  @@index([clientIp])
+  @@index([createdAt])
+  @@index([domain])
+}
+
+model AuditPage {
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  auditId           String             @db.ObjectId
+  url               String
+  title             String?
+  metaDescription   String?
+  h1                String?
+  h1Count           Int                @default(0)
+  wordCount         Int                @default(0)
+  canonical         String?
+  isIndexable       Boolean            @default(true)
+  hasSocialTags     Boolean            @default(false)
+  hasSchema         Boolean            @default(false)
+  statusCode        Int                @default(200)
+  loadTimeMs        Int?
+  aiPageSummary     String?
+  aiRecommendations String?
+  createdAt         DateTime           @default(now())
+  audit             Audit              @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  issues            AuditIssue[]
+  recommendations   AIRecommendation[]
+
+  @@index([auditId])
+}
+
+model AuditIssue {
+  id               String             @id @default(auto()) @map("_id") @db.ObjectId
+  auditId          String             @db.ObjectId
+  pageId           String?            @db.ObjectId
+  category         String
+  severity         String
+  issueKey         String?
+  title            String
+  description      String
+  recommendation   String?
+  affectedUrl      String?
+  aiRecommendation String?
+  aiPriority       String?
+  aiEffort         String?
+  aiImpact         String?
+  aiGeneratedAt    DateTime?
+  createdAt        DateTime           @default(now())
+  audit            Audit              @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  page             AuditPage?         @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  recommendations  AIRecommendation[]
+
+  @@index([auditId])
+  @@index([pageId])
+}
+
+model AIRecommendation {
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  auditId        String      @db.ObjectId
+  pageId         String?     @db.ObjectId
+  issueId        String?     @db.ObjectId
+  type           String
+  title          String
+  summary        String
+  whyItMatters   String?
+  howToFix       String?
+  developerNotes String?
+  priority       String?
+  impact         String?
+  effort         String?
+  category       String?
+  createdAt      DateTime    @default(now())
+  audit          Audit       @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  page           AuditPage?  @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  issue          AuditIssue? @relation(fields: [issueId], references: [id], onDelete: SetNull)
+
+  @@index([auditId])
+}
+
+model User {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  email        String   @unique
+  passwordHash String
+  role         String   @default("admin")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
