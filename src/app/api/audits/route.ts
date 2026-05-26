@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { formatUrl, getDomain } from "@/lib/utils";
-import { processAudit } from "@/lib/audit/process-audit";
+import { AUDIT_MAX_DURATION, scheduleAudit } from "@/lib/audit/schedule-audit";
 import { resolveClientIp } from "@/lib/request-ip";
+
+export const maxDuration = AUDIT_MAX_DURATION;
 
 export async function POST(request: Request) {
   try {
@@ -26,9 +28,7 @@ export async function POST(request: Request) {
       },
     });
 
-    processAudit(audit.id, url).catch((err) => {
-      console.error("Audit processing failed:", err);
-    });
+    scheduleAudit(audit.id, url);
 
     return NextResponse.json({ id: audit.id, status: "running" });
   } catch (error) {

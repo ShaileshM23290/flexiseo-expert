@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { processAudit, resetAuditForRerun } from "@/lib/audit/process-audit";
+import { resetAuditForRerun } from "@/lib/audit/process-audit";
+import { AUDIT_MAX_DURATION, scheduleAudit } from "@/lib/audit/schedule-audit";
+
+export const maxDuration = AUDIT_MAX_DURATION;
 
 export async function POST(
   _request: Request,
@@ -19,9 +22,7 @@ export async function POST(
 
   try {
     await resetAuditForRerun(id);
-    processAudit(id, audit.url).catch((err) => {
-      console.error("Re-audit processing failed:", err);
-    });
+    scheduleAudit(id, audit.url);
 
     return NextResponse.json({ id, status: "running" });
   } catch (error) {

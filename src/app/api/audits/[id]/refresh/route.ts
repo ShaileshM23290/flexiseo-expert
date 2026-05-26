@@ -5,6 +5,9 @@ import {
   refreshAuditIntegration,
 } from "@/lib/audit/integration-refresh";
 import { toPublicAuditError } from "@/lib/audit/public-errors";
+import { REFRESH_MAX_DURATION } from "@/lib/audit/schedule-audit";
+
+export const maxDuration = REFRESH_MAX_DURATION;
 
 export async function POST(
   request: Request,

@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "src/app/api/audits/route.ts": {
+      "maxDuration": 300
+    },
+    "src/app/api/audits/[id]/reaudit/route.ts": {
+      "maxDuration": 300
+    },
+    "src/app/api/audits/[id]/refresh/route.ts": {
+      "maxDuration": 120
+    }
+  }
+}

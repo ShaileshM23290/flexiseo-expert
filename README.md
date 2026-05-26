@@ -52,6 +52,20 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Deploy on Vercel
+
+1. Push the repo to GitHub and import it in [Vercel](https://vercel.com).
+2. Add all env vars from `.env.example` (especially `NEXT_PUBLIC_APP_URL=https://tryseoaudit.com`).
+3. Use **MongoDB Atlas** for `DATABASE_URL`.
+4. After first deploy, run locally against production DB:
+   ```bash
+   npm run db:push
+   npm run db:seed-admin
+   ```
+5. **Vercel Pro recommended** — full audits run up to 5 minutes in the background via Next.js `after()`. Hobby plan limits functions to 60s, which may not be enough for large crawls + PageSpeed + AI.
+
+Audit routes export `maxDuration = 300` (see `vercel.json` and `src/lib/audit/schedule-audit.ts`).
+
 ## OpenAI AI SEO Expert Recommendations
 
 FlexiSeo Expert uses OpenAI to generate expert-level SEO recommendations when `OPENAI_API_KEY` is configured.
@@ -70,7 +84,8 @@ FlexiSeo Expert uses OpenAI to generate expert-level SEO recommendations when `O
 | POST | `/api/audits` | Start a new SEO audit |
 | GET | `/api/audits` | List recent audits |
 | GET | `/api/audits/[id]` | Get audit results |
-| POST | `/api/audits/[id]/ai` | Regenerate AI recommendations |
+| POST | `/api/audits/[id]/reaudit` | Re-run audit for same URL |
+| POST | `/api/audits/[id]/refresh` | Refresh one integration check |
 
 ## Tech Stack
 
