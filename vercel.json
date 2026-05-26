@@ -8,6 +8,9 @@
     },
     "src/app/api/audits/[id]/refresh/route.ts": {
       "maxDuration": 120
+    },
+    "src/app/api/audits/[id]/pdf/route.ts": {
+      "maxDuration": 60
     }
   }
 }

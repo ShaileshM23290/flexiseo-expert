@@ -1,0 +1,14 @@
+HTTP/1.1 200 OK
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+cache-control: no-store, no-cache, must-revalidate
+content-disposition: attachment; filename="seo-audit-flexodynsolutions.com-2026-05-26-130735.pdf"
+content-type: application/pdf
+expires: 0
+pragma: no-cache
+x-pdf-generated-at: 2026-05-26T13:07:35.034Z
+x-pdf-version: 2
+Date: Tue, 26 May 2026 13:07:35 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+

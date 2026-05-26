@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   CheckCircle2,
+  FileCode,
   Globe,
   Mail,
   Shield,
@@ -305,14 +306,34 @@ export function TechnicalInsightsPanel({
                 </div>
               </div>
               {trust.observatory.failedTests.length > 0 && (
-                <ul className="mt-3 space-y-1.5">
-                  {trust.observatory.failedTests.slice(0, 4).map((t) => (
-                    <li key={t.name} className="text-xs text-slate-600">
-                      • {t.scoreDescription || t.name.replace(/-/g, " ")}
+                <div className="mt-3 rounded-lg border border-rose-100 bg-rose-50/60 p-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-rose-700">Failing checks</p>
+                  <ul className="mt-1.5 space-y-1">
+                    {trust.observatory.failedTests.slice(0, 4).map((t) => (
+                      <li key={t.name} className="text-xs text-slate-700">
+                        • {t.scoreDescription || t.name.replace(/-/g, " ")}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className="mt-3 rounded-lg border border-slate-100 bg-slate-50/80 p-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Headers evaluated</p>
+                <ul className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-0.5">
+                  {[
+                    "Content-Security-Policy",
+                    "Strict-Transport-Security",
+                    "X-Frame-Options",
+                    "X-Content-Type-Options",
+                    "Referrer-Policy",
+                    "Permissions-Policy",
+                  ].map((h) => (
+                    <li key={h} className="text-xs text-slate-600">
+                      • {h}
                     </li>
                   ))}
                 </ul>
-              )}
+              </div>
               {trust.observatory.detailsUrl && trust.observatory.source === "mozilla" && (
                 <a
                   href={trust.observatory.detailsUrl}
@@ -488,6 +509,50 @@ export function TechnicalInsightsPanel({
             </div>
             <p className="mt-3 text-xs text-slate-500">
               From our crawl — use full Re-audit to refresh these metrics.
+            </p>
+          </InsightCard>
+        )}
+
+        {schemaSummary?.totalPages != null && (
+          <InsightCard
+            icon={FileCode}
+            title="Structured Data"
+            subtitle="Schema.org coverage across crawled pages"
+            accent="violet"
+          >
+            <div className="grid grid-cols-2 gap-3">
+              <MetricPill
+                label="Pages with schema"
+                value={`${Number(schemaSummary.pagesWithSchema ?? 0)} / ${Number(schemaSummary.totalPages ?? 0)}`}
+              />
+              <MetricPill
+                label="Coverage"
+                value={`${Number(schemaSummary.coverage ?? 0)}%`}
+                rating={
+                  Number(schemaSummary.coverage ?? 0) >= 70
+                    ? "GOOD"
+                    : Number(schemaSummary.coverage ?? 0) >= 30
+                    ? "NEEDS_IMPROVEMENT"
+                    : "POOR"
+                }
+              />
+            </div>
+            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all",
+                  Number(schemaSummary.coverage ?? 0) >= 70
+                    ? "bg-emerald-500"
+                    : Number(schemaSummary.coverage ?? 0) >= 30
+                    ? "bg-amber-500"
+                    : "bg-rose-500"
+                )}
+                style={{ width: `${Math.max(2, Number(schemaSummary.coverage ?? 0))}%` }}
+              />
+            </div>
+            <p className="mt-3 text-xs text-slate-500">
+              Schema.org markup helps Google show rich results. Higher coverage means more pages
+              are eligible for enhanced search appearances.
             </p>
           </InsightCard>
         )}

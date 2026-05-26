@@ -4,7 +4,7 @@ import { categoryLabels, type Category } from "@/lib/config";
 import type { IssueRecommendation, ExecutiveSummary } from "@/lib/ai/schemas";
 import { Sparkles } from "lucide-react";
 
-export function GradeBadge({ score, size = "lg" }: { score: number; size?: "sm" | "lg" }) {
+export function GradeBadge({ score, size = "lg", className }: { score: number; size?: "sm" | "lg"; className?: string }) {
   const grade = scoreToGrade(score);
   return (
     <div
@@ -12,7 +12,8 @@ export function GradeBadge({ score, size = "lg" }: { score: number; size?: "sm" 
         "flex items-center justify-center rounded-xl border font-bold",
         gradeBg(grade),
         gradeColor(grade),
-        size === "lg" ? "h-24 w-24 text-4xl" : "h-14 w-14 text-xl"
+        size === "lg" ? "h-24 w-24 text-4xl" : "h-14 w-14 text-xl",
+        className
       )}
     >
       {grade}
@@ -44,10 +45,10 @@ export function ScoreRing({ score, size = "lg" }: { score: number; size?: "sm" |
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={cn("font-bold", scoreColor(score), size === "lg" ? "text-3xl" : "text-lg")}>
+        <span className={cn("font-bold", scoreColor(score), size === "lg" ? "text-3xl" : "text-xl")}>
           {score}
         </span>
-        {size === "lg" && <span className="text-xs text-slate-500">/ 100</span>}
+        <span className={cn("text-slate-500", size === "lg" ? "text-xs" : "text-[10px]")}>/ 100</span>
       </div>
     </div>
   );

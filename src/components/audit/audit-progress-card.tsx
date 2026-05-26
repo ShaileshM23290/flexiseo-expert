@@ -54,13 +54,13 @@ export function AuditProgressCard({
   url,
   className,
 }: AuditProgressCardProps) {
-  const [, elapsedTick] = useState(0);
+  const [elapsedTick, setElapsedTick] = useState(0);
   const onFinalStep = stepIndex >= auditLoadingSteps.length - 1;
   const elapsedLabel = formatElapsed(startedAt, elapsedTick);
 
   useEffect(() => {
     if (!startedAt) return;
-    const tick = window.setInterval(() => elapsedTick((n) => n + 1), 1000);
+    const tick = window.setInterval(() => setElapsedTick((n) => n + 1), 1000);
     return () => window.clearInterval(tick);
   }, [startedAt]);
 

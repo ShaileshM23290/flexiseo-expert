@@ -43,8 +43,8 @@ export function PageBreakdownTable({ pages }: { pages: PageRow[] }) {
           Expand rows to see SEO issues found on each page
         </p>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left text-slate-500">
               <th className="p-4 font-medium">Page</th>

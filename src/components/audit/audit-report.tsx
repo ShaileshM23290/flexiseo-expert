@@ -2,22 +2,26 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2, RefreshCw } from "lucide-react";
+import { ArrowLeft, Download, Loader2, RefreshCw } from "lucide-react";
 import {
   ActionPlanCard,
   CategoryScoreGrid,
   ExecutiveSummaryCard,
   GradeBadge,
   IssueCard,
+  ScoreRing,
 } from "@/components/audit/report-cards";
 import { PageBreakdownTable, type PageIssue } from "@/components/audit/page-breakdown";
 import { AuditProgressCard, useAuditLoadingSteps } from "@/components/audit/audit-progress-card";
 import { TechnicalInsightsPanel } from "@/components/audit/technical-insights";
 import { parseJsonField } from "@/lib/parse-json";
-import type { ActionPlan, CategoryRecommendation, ExecutiveSummary, IssueRecommendation } from "@/lib/ai/schemas";
-import { categoryLabels, categories, normalizeCategory, type Category } from "@/lib/config";
-import { overallVerdict, scoreToGrade, gradeColor } from "@/lib/grades";
 import { formatPublicAuditError, toPublicAuditError } from "@/lib/audit/public-errors";
+import {
+  buildAuditReportModel,
+  parseIssueAiRecommendation,
+} from "@/lib/audit/report-model";
+import { categoryLabels, categories, type Category } from "@/lib/config";
+import { gradeColor } from "@/lib/grades";
 import { cn, sanitizeText } from "@/lib/utils";
 
 interface AuditData {
@@ -38,6 +42,7 @@ interface AuditData {
   aiCategoryInsights: string | null;
   performanceData: string | null;
   schemaSummary: string | null;
+  completedAt?: string | null;
   pages: Array<{
     id: string;
     url: string;
@@ -57,65 +62,6 @@ interface AuditData {
     aiRecommendation: string | null;
     pageId: string | null;
   }>;
-}
-
-function parseCategoryScores(raw: string): Record<Category, number> {
-  const parsed = parseJsonField<Record<string, number>>(raw, {});
-  const scores = {} as Record<Category, number>;
-  for (const cat of categories) {
-    scores[cat] = parsed[cat] ?? 100;
-  }
-  return scores;
-}
-
-interface GroupedIssue {
-  title: string;
-  category: Category;
-  severity: string;
-  description: string;
-  recommendation: string | null;
-  affectedUrls: string[];
-  aiRecommendation: string | null;
-  representativeId: string;
-}
-
-const SEVERITY_RANK: Record<string, number> = { critical: 0, warning: 1, notice: 2 };
-
-function groupClientIssues(
-  issues: AuditData["issues"]
-): GroupedIssue[] {
-  const map = new Map<string, GroupedIssue>();
-  for (const issue of issues) {
-    const cat = normalizeCategory(issue.category);
-    const key = `${cat}::${issue.title.toLowerCase().trim()}`;
-    const url = issue.affectedUrl ?? "";
-    const existing = map.get(key);
-    if (existing) {
-      if (url && !existing.affectedUrls.includes(url)) existing.affectedUrls.push(url);
-      if (SEVERITY_RANK[issue.severity] < SEVERITY_RANK[existing.severity]) {
-        existing.severity = issue.severity;
-      }
-      if (!existing.aiRecommendation && issue.aiRecommendation) {
-        existing.aiRecommendation = issue.aiRecommendation;
-      }
-    } else {
-      map.set(key, {
-        title: issue.title,
-        category: cat,
-        severity: issue.severity,
-        description: issue.description,
-        recommendation: issue.recommendation,
-        affectedUrls: url ? [url] : [],
-        aiRecommendation: issue.aiRecommendation,
-        representativeId: issue.id,
-      });
-    }
-  }
-  return [...map.values()].sort((a, b) => {
-    const sev = (SEVERITY_RANK[a.severity] ?? 99) - (SEVERITY_RANK[b.severity] ?? 99);
-    if (sev !== 0) return sev;
-    return b.affectedUrls.length - a.affectedUrls.length;
-  });
 }
 
 function buildPageIssuesMap(
@@ -148,6 +94,8 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
   const [loading, setLoading] = useState(true);
   const [reauditing, setReauditing] = useState(false);
   const [reauditError, setReauditError] = useState("");
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState("");
   const { stepIndex, startedAt } = useAuditLoadingSteps(audit?.status === "running");
   const [activeTab, setActiveTab] = useState<Category | "all">("all");
 
@@ -190,6 +138,38 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
       window.clearTimeout(stop);
     };
   }, [audit?.status, audit?.aiSummary, fetchAudit]);
+
+  async function handleDownloadPdf() {
+    setDownloadingPdf(true);
+    setPdfError("");
+
+    try {
+      const res = await fetch(`/api/audits/${auditId}/pdf?t=${Date.now()}`, {
+        cache: "no-store",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Failed to download PDF");
+      }
+
+      const blob = await res.blob();
+      const disposition = res.headers.get("Content-Disposition") ?? "";
+      const match = disposition.match(/filename="([^"]+)"/);
+      const filename =
+        match?.[1] ?? `seo-audit-${audit?.domain ?? auditId}-${Date.now()}.pdf`;
+
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      setPdfError(toPublicAuditError(err));
+    } finally {
+      setDownloadingPdf(false);
+    }
+  }
 
   async function handleReaudit() {
     setReauditing(true);
@@ -278,74 +258,90 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
     );
   }
 
-  const categoryScores = parseCategoryScores(audit.categoryScores);
-  const executiveSummary = parseJsonField<ExecutiveSummary | null>(audit.aiSummary, null);
-  const actionPlan = parseJsonField<ActionPlan | null>(audit.aiActionPlan, null);
-  const categoryInsights = parseJsonField<Record<string, CategoryRecommendation>>(audit.aiCategoryInsights, {});
+  const report = buildAuditReportModel(audit);
+  const categoryScores = report.categoryScores;
+  const executiveSummary = report.executiveSummary;
+  const actionPlan = report.actionPlan;
+  const categoryInsights = report.categoryInsights;
   const performanceData = parseJsonField<Record<string, unknown> | null>(audit.performanceData, null);
   const schemaSummary = parseJsonField<Record<string, unknown> | null>(audit.schemaSummary, null);
   const safeBrowsing = (performanceData?.trust as { safeBrowsing?: { safe: boolean; threats: string[] } | null })?.safeBrowsing;
-  const verdict = overallVerdict(audit.overallScore);
-  const overallGrade = scoreToGrade(audit.overallScore);
+  const verdict = report.verdict;
+  const overallGrade = report.overallGrade;
+  const overallScore = report.overallScore;
 
-  const groupedAll = groupClientIssues(audit.issues);
+  const groupedAll = report.groupedIssues;
   const filteredIssues =
     activeTab === "all" ? groupedAll : groupedAll.filter((g) => g.category === activeTab);
 
   const pageIssuesById = buildPageIssuesMap(audit.pages, audit.issues);
 
-  const pageIssueCounts = new Map<string, number>();
-  pageIssuesById.forEach((issues, pageId) => {
-    pageIssueCounts.set(pageId, issues.length);
-  });
+  const pageIssueCounts = new Map(report.pages.map((p) => [p.id, p.issueCount]));
 
   const countForCategory = (cat: Category) =>
     groupedAll.filter((g) => g.category === cat).length;
 
-  const totalUnique = groupedAll.length;
-  const criticalUnique = groupedAll.filter((g) => g.severity === "critical").length;
-  const warningUnique = groupedAll.filter((g) => g.severity === "warning").length;
-  const noticeUnique = groupedAll.filter((g) => g.severity === "notice").length;
+  const totalUnique = report.stats.totalUnique;
+  const criticalUnique = report.stats.critical;
+  const warningUnique = report.stats.warning;
+  const noticeUnique = report.stats.notice;
 
   return (
     <div className="px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <Link
             href="/audit"
             className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-brand-600"
           >
             <ArrowLeft className="h-4 w-4" /> New Audit
           </Link>
-          <button
-            type="button"
-            onClick={handleReaudit}
-            disabled={reauditing}
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-60"
-          >
-            <RefreshCw className={cn("h-4 w-4", reauditing && "animate-spin")} />
-            Re-audit
-          </button>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
+            <button
+              type="button"
+              onClick={handleDownloadPdf}
+              disabled={downloadingPdf}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-60 sm:w-auto"
+            >
+              <Download className={cn("h-4 w-4", downloadingPdf && "animate-pulse")} />
+              {downloadingPdf ? "Preparing PDF…" : "Download PDF"}
+            </button>
+            <button
+              type="button"
+              onClick={handleReaudit}
+              disabled={reauditing}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-60 sm:w-auto"
+            >
+              <RefreshCw className={cn("h-4 w-4", reauditing && "animate-spin")} />
+              Re-audit
+            </button>
+          </div>
         </div>
-        {reauditError && (
-          <p className="mb-4 text-sm text-rose-600">{reauditError}</p>
+        {(reauditError || pdfError) && (
+          <div className="mb-4 space-y-1">
+            {reauditError && <p className="text-sm text-rose-600">{reauditError}</p>}
+            {pdfError && <p className="text-sm text-rose-600">{pdfError}</p>}
+          </div>
         )}
 
         {/* SEOptimer-style header */}
-        <div className="glass-card rounded-2xl p-6 sm:p-8">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-6">
-              <GradeBadge score={audit.overallScore} />
-              <div>
+        <div className="glass-card rounded-2xl p-4 sm:p-6 lg:p-8">
+          <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between md:gap-6">
+            <div className="flex w-full flex-col items-center gap-4 md:flex-row md:items-start md:gap-6">
+              <div className="flex shrink-0 flex-col items-center gap-3 md:flex-row md:items-center md:gap-4">
+                <ScoreRing score={overallScore} size="lg" />
+                <GradeBadge score={overallScore} size="sm" className="hidden md:flex" />
+              </div>
+              <div className="min-w-0 w-full text-center md:text-left">
                 <p className={cn("text-sm font-semibold uppercase tracking-wide", gradeColor(overallGrade))}>
-                  Overall Grade: {overallGrade}
+                  {overallScore}/100 · Grade {overallGrade}
                 </p>
-                <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">{verdict.title}</h1>
-                <p className="mt-1 text-sm text-slate-500">{audit.url}</p>
-                <p className="mt-2 text-sm text-slate-600">{verdict.description}</p>
+                <h1 className="mt-1 text-xl font-bold text-slate-900 sm:text-2xl lg:text-3xl">{verdict.title}</h1>
+                <p className="mt-1 break-all text-sm text-slate-500">{audit.url}</p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">{verdict.description}</p>
               </div>
             </div>
-            <div className="text-right">
+            <div className="w-full shrink-0 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-center md:w-auto md:min-w-[9rem] md:text-right">
               <p className="text-3xl font-bold text-slate-900">{totalUnique}</p>
               <p className="text-sm text-slate-500">Unique Recommendations</p>
             </div>
@@ -360,16 +356,58 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
           </div>
         )}
 
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: "Critical", count: criticalUnique, color: "text-rose-600" },
-            { label: "Warnings", count: warningUnique, color: "text-amber-600" },
-            { label: "Notices", count: noticeUnique, color: "text-sky-600" },
-            { label: "Pages Crawled", count: audit.pagesCrawled, color: "text-slate-700" },
+            {
+              label: "Critical",
+              count: criticalUnique,
+              color: "text-rose-600",
+              ring: "ring-rose-100",
+              bg: "bg-rose-50",
+              dot: "bg-rose-500",
+            },
+            {
+              label: "Warnings",
+              count: warningUnique,
+              color: "text-amber-600",
+              ring: "ring-amber-100",
+              bg: "bg-amber-50",
+              dot: "bg-amber-500",
+            },
+            {
+              label: "Notices",
+              count: noticeUnique,
+              color: "text-sky-600",
+              ring: "ring-sky-100",
+              bg: "bg-sky-50",
+              dot: "bg-sky-500",
+            },
+            {
+              label: "Pages Crawled",
+              count: audit.pagesCrawled,
+              color: "text-slate-800",
+              ring: "ring-slate-200",
+              bg: "bg-white",
+              dot: "bg-slate-400",
+            },
           ].map((stat) => (
-            <div key={stat.label} className="glass-card rounded-lg px-4 py-2">
-              <span className={cn("text-lg font-bold", stat.color)}>{stat.count}</span>
-              <span className="ml-2 text-sm text-slate-500">{stat.label}</span>
+            <div
+              key={stat.label}
+              className={cn(
+                "group relative overflow-hidden rounded-xl p-4 ring-1 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-5",
+                stat.bg,
+                stat.ring
+              )}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className={cn("text-3xl font-bold leading-none sm:text-4xl", stat.color)}>
+                  {stat.count}
+                </p>
+                <span className={cn("mt-1 h-2 w-2 rounded-full", stat.dot)} />
+              </div>
+              <p className="mt-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                {stat.label}
+              </p>
             </div>
           ))}
         </div>
@@ -403,7 +441,7 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
             <button
               onClick={() => setActiveTab("all")}
               className={cn(
-                "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors sm:text-sm",
                 activeTab === "all"
                   ? "bg-brand-600 text-white"
                   : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
@@ -416,7 +454,7 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
                 key={cat}
                 onClick={() => setActiveTab(cat)}
                 className={cn(
-                  "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                  "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors sm:text-sm",
                   activeTab === cat
                     ? "bg-brand-600 text-white"
                     : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
@@ -444,7 +482,7 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
 
           <div className="space-y-4">
             {filteredIssues.map((group) => {
-              const aiRec = parseJsonField<IssueRecommendation | null>(group.aiRecommendation, null);
+              const aiRec = parseIssueAiRecommendation(group.aiRecommendation);
               return (
                 <IssueCard
                   key={`${group.category}-${group.title}`}

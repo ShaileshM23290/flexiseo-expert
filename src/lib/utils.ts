@@ -47,7 +47,7 @@ export function severityColor(severity: string): string {
     case "warning":
       return "bg-amber-50 text-amber-800 border-amber-200";
     default:
-      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      return "bg-sky-50 text-sky-700 border-sky-200";
   }
 }
 
