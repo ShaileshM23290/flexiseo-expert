@@ -199,10 +199,12 @@ export async function fetchPageSpeedInsights(url: string): Promise<PageSpeedResu
   const apiKey = process.env.PAGESPEED_API_KEY;
   if (!apiKey) return null;
 
-  // Run mobile and desktop in parallel — Google charges them as separate quota units
+  const includeDesktop = process.env.PAGESPEED_DESKTOP === "true";
+
+  // Mobile is Google's primary signal; desktop doubles API time (~2 min on serverless).
   const [mobile, desktop] = await Promise.all([
     runStrategy(url, apiKey, "mobile"),
-    runStrategy(url, apiKey, "desktop"),
+    includeDesktop ? runStrategy(url, apiKey, "desktop") : Promise.resolve(null),
   ]);
 
   if (!mobile && !desktop) return null;

@@ -149,6 +149,8 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
   const [reauditing, setReauditing] = useState(false);
   const [reauditError, setReauditError] = useState("");
   const [stepIndex, setStepIndex] = useState(0);
+  const [runningStartedAt, setRunningStartedAt] = useState<number | null>(null);
+  const [, elapsedTick] = useState(0);
   const [activeTab, setActiveTab] = useState<Category | "all">("all");
 
   const fetchAudit = useCallback(async () => {
@@ -164,7 +166,12 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
   }, [fetchAudit]);
 
   useEffect(() => {
-    if (audit?.status !== "running") return;
+    if (audit?.status !== "running") {
+      setRunningStartedAt(null);
+      return;
+    }
+
+    setRunningStartedAt((prev) => prev ?? Date.now());
 
     const poll = window.setInterval(async () => {
       const data = await fetchAudit();
@@ -177,13 +184,35 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
   }, [audit?.status, fetchAudit]);
 
   useEffect(() => {
+    if (audit?.status !== "completed" || audit.aiSummary) return;
+
+    const poll = window.setInterval(() => {
+      void fetchAudit();
+    }, 3000);
+
+    const stop = window.setTimeout(() => window.clearInterval(poll), 120_000);
+
+    return () => {
+      window.clearInterval(poll);
+      window.clearTimeout(stop);
+    };
+  }, [audit?.status, audit?.aiSummary, fetchAudit]);
+
+  useEffect(() => {
     if (audit?.status !== "running") return;
 
     const stepInterval = window.setInterval(() => {
       setStepIndex((prev) => Math.min(prev + 1, auditLoadingSteps.length - 1));
-    }, 2500);
+    }, 4000);
 
     return () => window.clearInterval(stepInterval);
+  }, [audit?.status]);
+
+  useEffect(() => {
+    if (audit?.status !== "running") return;
+
+    const tick = window.setInterval(() => elapsedTick((n) => n + 1), 1000);
+    return () => window.clearInterval(tick);
   }, [audit?.status]);
 
   async function handleReaudit() {
@@ -224,6 +253,15 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
   }
 
   if (audit.status === "running") {
+    const elapsedSec = runningStartedAt
+      ? Math.floor((Date.now() - runningStartedAt) / 1000)
+      : 0;
+    const elapsedLabel =
+      elapsedSec >= 60
+        ? `${Math.floor(elapsedSec / 60)}m ${elapsedSec % 60}s`
+        : `${elapsedSec}s`;
+    const onFinalStep = stepIndex >= auditLoadingSteps.length - 1;
+
     return (
       <div className="px-4 py-20 sm:px-6">
         <div className="mx-auto max-w-md rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
@@ -234,6 +272,12 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
           <p className="mt-1 animate-pulse-soft text-sm text-brand-600">
             {auditLoadingSteps[stepIndex]}
           </p>
+          {onFinalStep && (
+            <p className="mt-2 text-xs leading-relaxed text-slate-500">
+              Finishing PageSpeed, security scans, and scoring. This step often takes 1–3 minutes
+              {elapsedSec > 0 ? ` (${elapsedLabel} elapsed)` : ""}.
+            </p>
+          )}
           <p className="mt-3 truncate text-xs text-slate-500">{audit.url}</p>
           <div className="mx-auto mt-6 max-w-sm">
             <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">

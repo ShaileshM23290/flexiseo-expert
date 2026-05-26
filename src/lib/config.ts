@@ -36,7 +36,7 @@ export const auditLoadingSteps = [
   "Scanning security headers (Mozilla)",
   "Checking Safe Browsing & DNS",
   "Validating HTML markup (W3C)",
-  "Preparing expert report",
+  "Preparing your report",
 ];
 
 export { maxIssuesForAI, maxPagesForAISummary } from "./ai/config";

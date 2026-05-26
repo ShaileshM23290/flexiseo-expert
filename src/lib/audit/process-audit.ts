@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { runAudit } from "@/lib/audit/runner";
-import { generateAIRecommendations } from "@/lib/audit/ai-service";
 import { toPublicAuditError } from "@/lib/audit/public-errors";
+import { scheduleAIGeneration } from "@/lib/audit/schedule-audit";
 import { isOpenAIAvailable, isOpenAIAutoGenerateEnabled } from "@/lib/ai/seo-recommendations";
 
 export async function resetAuditForRerun(auditId: string) {
@@ -62,11 +62,11 @@ export async function processAudit(auditId: string, url: string) {
 
     const pageUrlToId = new Map(pageRecords.map((p) => [p.url, p.id]));
 
-    for (const issue of result.issues) {
-      await prisma.auditIssue.create({
-        data: {
+    if (result.issues.length > 0) {
+      await prisma.auditIssue.createMany({
+        data: result.issues.map((issue) => ({
           auditId,
-          pageId: pageUrlToId.get(issue.affectedUrl) ?? null,
+          pageId: pageUrlToId.get(issue.affectedUrl ?? "") ?? null,
           category: issue.category,
           severity: issue.severity,
           issueKey: issue.key,
@@ -74,7 +74,7 @@ export async function processAudit(auditId: string, url: string) {
           description: issue.description,
           recommendation: issue.recommendation,
           affectedUrl: issue.affectedUrl,
-        },
+        })),
       });
     }
 
@@ -97,18 +97,11 @@ export async function processAudit(auditId: string, url: string) {
       },
     });
 
-    if (isOpenAIAvailable() && isOpenAIAutoGenerateEnabled()) {
-      try {
-        await generateAIRecommendations(auditId);
-      } catch (aiError) {
-        console.error(
-          `[Audit ${auditId}] AI generation failed — audit remains completed:`,
-          aiError
-        );
-      }
-    } else if (isOpenAIAvailable()) {
+    scheduleAIGeneration(auditId);
+
+    if (isOpenAIAvailable() && !isOpenAIAutoGenerateEnabled()) {
       console.info("[AI] Skipped — OPENAI_AUTO_GENERATE=false");
-    } else {
+    } else if (!isOpenAIAvailable()) {
       console.info("[AI] Skipping — no API key");
     }
   } catch (error) {

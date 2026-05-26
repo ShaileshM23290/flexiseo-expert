@@ -29,6 +29,8 @@ import {
 
 const MAX_PAGES = 15;
 const FETCH_TIMEOUT = 15000;
+/** Crawl pages in parallel batches — major speedup on Vercel vs serial fetch. */
+const CRAWL_CONCURRENCY = 4;
 
 const NON_PAGE_EXT = /\.(xml|xml\.gz|pdf|jpg|jpeg|png|gif|webp|svg|css|js|zip|gz|mp4|woff2?|ico)(\?.*)?$/i;
 
@@ -276,6 +278,78 @@ export interface AuditRunResult {
   performanceData: Record<string, unknown>;
 }
 
+function isHomepageUrl(pageUrl: string, baseUrl: string): boolean {
+  try {
+    const u = new URL(pageUrl);
+    const b = new URL(baseUrl);
+    const path = u.pathname.replace(/\/$/, "") || "/";
+    return (
+      u.hostname.replace(/^www\./, "") === b.hostname.replace(/^www\./, "") &&
+      (path === "/" || path === "")
+    );
+  } catch {
+    return pageUrl === baseUrl || pageUrl === `${baseUrl}/`;
+  }
+}
+
+type CrawledPageEntry = AuditRunResult["pages"][number];
+
+async function crawlSinglePage(
+  pageUrl: string,
+  baseUrl: string,
+  checkedLinkUrls: Set<string>,
+  allBrokenUrls: Set<string>,
+  allRedirectUrls: Set<string>
+): Promise<{
+  page: CrawledPageEntry;
+  signals: PageSignals;
+  issues: DetectedIssue[];
+  html: string | null;
+} | null> {
+  const { html, statusCode, loadTimeMs, headers } = await fetchWithTimeout(pageUrl);
+
+  if (!looksLikeHtml(html)) {
+    return null;
+  }
+
+  const signals = extractPageSignals(pageUrl, html, statusCode, loadTimeMs, headers);
+  const issues = analyzePage(signals);
+  const isHomepage = isHomepageUrl(pageUrl, baseUrl);
+
+  const broken = await checkBrokenLinks(pageUrl, html, 25, checkedLinkUrls);
+  broken.brokenUrls.forEach((u) => allBrokenUrls.add(u));
+  broken.redirectUrls.forEach((u) => allRedirectUrls.add(u));
+  issues.push(...broken.issues);
+
+  if (isHomepage) {
+    const homeExtra = await checkBrokenLinks(pageUrl, html, 15, checkedLinkUrls);
+    homeExtra.brokenUrls.forEach((u) => allBrokenUrls.add(u));
+    homeExtra.redirectUrls.forEach((u) => allRedirectUrls.add(u));
+    issues.push(...homeExtra.issues);
+  }
+
+  return {
+    signals,
+    issues,
+    html: isHomepage ? html : null,
+    page: {
+      url: signals.url,
+      title: signals.title,
+      metaDescription: signals.metaDescription,
+      h1: signals.h1,
+      h1Count: signals.h1Count,
+      wordCount: signals.wordCount,
+      canonical: signals.canonical,
+      isIndexable: signals.isIndexable,
+      hasSocialTags: signals.hasSocialTags,
+      hasSchema: signals.hasSchema,
+      statusCode: signals.statusCode,
+      loadTimeMs: signals.loadTimeMs,
+      issues,
+    },
+  };
+}
+
 export async function runAudit(rawUrl: string): Promise<AuditRunResult> {
   const baseUrl = formatUrl(rawUrl);
   const domain = getDomain(baseUrl);
@@ -287,6 +361,16 @@ export async function runAudit(rawUrl: string): Promise<AuditRunResult> {
   ]);
   const { urls: urlsToCrawl, sitemapFound } = await discoverUrls(baseUrl, robotsTxt);
 
+  // Overlap slow third-party calls with the crawl (PageSpeed alone can take 1–2 min).
+  const pageSpeedPromise = fetchPageSpeedInsights(baseUrl);
+  const earlyExternalPromise = Promise.all([
+    fetchCruxData(baseUrl),
+    checkSafeBrowsing(baseUrl),
+    fetchDnsChecks(baseUrl),
+    fetchBacklinkProfile(baseUrl),
+    validateHtml(baseUrl),
+  ]);
+
   const pages: AuditRunResult["pages"] = [];
   const allIssues: DetectedIssue[] = [];
   const pageSignals: PageSignals[] = [];
@@ -297,82 +381,61 @@ export async function runAudit(rawUrl: string): Promise<AuditRunResult> {
   const allBrokenUrls = new Set<string>();
   const allRedirectUrls = new Set<string>();
 
-  for (const pageUrl of urlsToCrawl) {
-    if (!isCrawlablePageUrl(pageUrl, baseUrl)) continue;
+  const crawlTargets = urlsToCrawl.filter((pageUrl) => isCrawlablePageUrl(pageUrl, baseUrl));
 
-    try {
-      const { html, statusCode, loadTimeMs, headers } = await fetchWithTimeout(pageUrl);
+  for (let i = 0; i < crawlTargets.length; i += CRAWL_CONCURRENCY) {
+    const batch = crawlTargets.slice(i, i + CRAWL_CONCURRENCY);
+    const batchResults = await Promise.all(
+      batch.map(async (pageUrl) => {
+        try {
+          return { pageUrl, result: await crawlSinglePage(pageUrl, baseUrl, checkedLinkUrls, allBrokenUrls, allRedirectUrls) };
+        } catch (error) {
+          return { pageUrl, error: error instanceof Error ? error.message : "Unknown error" };
+        }
+      })
+    );
 
-      if (!looksLikeHtml(html)) {
+    for (const item of batchResults) {
+      if ("error" in item && item.error) {
+        const errIssue: DetectedIssue = {
+          key: "crawl-failure",
+          category: "onpage",
+          severity: "critical",
+          title: "Failed to crawl page",
+          description: `Could not fetch ${item.pageUrl}: ${item.error}`,
+          recommendation: "Ensure the URL is accessible and returns valid HTML.",
+          affectedUrl: item.pageUrl,
+        };
+        allIssues.push(errIssue);
+        pages.push({
+          url: item.pageUrl,
+          title: null,
+          metaDescription: null,
+          h1: null,
+          h1Count: 0,
+          wordCount: 0,
+          canonical: null,
+          isIndexable: true,
+          hasSocialTags: false,
+          hasSchema: false,
+          statusCode: 0,
+          loadTimeMs: 0,
+          issues: [errIssue],
+        });
         continue;
       }
 
-      if (pageUrl === baseUrl || pageUrl === baseUrl + "/") homepageHtml = html;
+      const crawled = item.result;
+      if (!crawled) continue;
 
-      const signals = extractPageSignals(pageUrl, html, statusCode, loadTimeMs, headers);
-      pageSignals.push(signals);
-      const issues = analyzePage(signals);
-      allIssues.push(...issues);
-
-      const isFirstHtmlPage = pages.length === 0;
-      const broken = await checkBrokenLinks(pageUrl, html, 25, checkedLinkUrls);
-      broken.brokenUrls.forEach((u) => allBrokenUrls.add(u));
-      broken.redirectUrls.forEach((u) => allRedirectUrls.add(u));
-      allIssues.push(...broken.issues);
-
-      // Extra pass on homepage for deeper sampling (nav/footer links)
-      if (isFirstHtmlPage) {
-        const homeExtra = await checkBrokenLinks(pageUrl, html, 15, checkedLinkUrls);
-        homeExtra.brokenUrls.forEach((u) => allBrokenUrls.add(u));
-        homeExtra.redirectUrls.forEach((u) => allRedirectUrls.add(u));
-        allIssues.push(...homeExtra.issues);
-      }
-
-      brokenInternalLinks = allBrokenUrls.size;
-      redirectInternalLinks = allRedirectUrls.size;
-
-      pages.push({
-        url: signals.url,
-        title: signals.title,
-        metaDescription: signals.metaDescription,
-        h1: signals.h1,
-        h1Count: signals.h1Count,
-        wordCount: signals.wordCount,
-        canonical: signals.canonical,
-        isIndexable: signals.isIndexable,
-        hasSocialTags: signals.hasSocialTags,
-        hasSchema: signals.hasSchema,
-        statusCode: signals.statusCode,
-        loadTimeMs: signals.loadTimeMs,
-        issues,
-      });
-    } catch (error) {
-      const errIssue: DetectedIssue = {
-        key: "crawl-failure",
-        category: "onpage",
-        severity: "critical",
-        title: "Failed to crawl page",
-        description: `Could not fetch ${pageUrl}: ${error instanceof Error ? error.message : "Unknown error"}`,
-        recommendation: "Ensure the URL is accessible and returns valid HTML.",
-        affectedUrl: pageUrl,
-      };
-      allIssues.push(errIssue);
-      pages.push({
-        url: pageUrl,
-        title: null,
-        metaDescription: null,
-        h1: null,
-        h1Count: 0,
-        wordCount: 0,
-        canonical: null,
-        isIndexable: true,
-        hasSocialTags: false,
-        hasSchema: false,
-        statusCode: 0,
-        loadTimeMs: 0,
-        issues: [errIssue],
-      });
+      if (crawled.html) homepageHtml = crawled.html;
+      pageSignals.push(crawled.signals);
+      allIssues.push(...crawled.issues);
+      pages.push(crawled.page);
     }
+
+    brokenInternalLinks = allBrokenUrls.size;
+    redirectInternalLinks = allRedirectUrls.size;
   }
 
   if (pages.length === 0) {
@@ -394,31 +457,16 @@ export async function runAudit(rawUrl: string): Promise<AuditRunResult> {
     )
   );
 
-  const pageSpeed = await fetchPageSpeedInsights(baseUrl);
+  const pageSpeed = await pageSpeedPromise;
   const homepage =
-    pageSignals.find((p) => {
-      try {
-        const u = new URL(p.url);
-        const b = new URL(baseUrl);
-        const path = u.pathname.replace(/\/$/, "") || "/";
-        return (
-          u.hostname.replace(/^www\./, "") === b.hostname.replace(/^www\./, "") &&
-          (path === "/" || path === "")
-        );
-      } catch {
-        return false;
-      }
-    }) ?? pageSignals[0];
+    pageSignals.find((p) => isHomepageUrl(p.url, baseUrl)) ?? pageSignals[0];
 
-  // Free third-party checks — run in parallel after crawl
-  const [crux, observatory, safeBrowsing, dns, w3c, backlinks] = await Promise.all([
-    fetchCruxData(baseUrl),
-    fetchObservatoryScan(baseUrl, homepage?.securityHeaders, homepage?.isHttps ?? true),
-    checkSafeBrowsing(baseUrl),
-    fetchDnsChecks(baseUrl),
-    validateHtml(baseUrl),
-    fetchBacklinkProfile(baseUrl),
-  ]);
+  const [crux, safeBrowsing, dns, backlinks, w3c] = await earlyExternalPromise;
+  const observatory = await fetchObservatoryScan(
+    baseUrl,
+    homepage?.securityHeaders,
+    homepage?.isHttps ?? true
+  );
 
   const externalSummary: ExternalInsightsSummary = {
     crux,

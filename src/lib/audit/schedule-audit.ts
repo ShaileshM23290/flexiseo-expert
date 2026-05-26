@@ -1,5 +1,7 @@
 import { after } from "next/server";
 import { processAudit } from "@/lib/audit/process-audit";
+import { generateAIRecommendations } from "@/lib/audit/ai-service";
+import { isOpenAIAvailable, isOpenAIAutoGenerateEnabled } from "@/lib/ai/seo-recommendations";
 
 /**
  * Run a full audit after the HTTP response is sent.
@@ -13,6 +15,19 @@ export function scheduleAudit(auditId: string, url: string) {
       await processAudit(auditId, url);
     } catch (error) {
       console.error(`[Audit ${auditId}] Unhandled background error:`, error);
+    }
+  });
+}
+
+/** Run AI enrichment after the audit is already marked completed — report shows immediately. */
+export function scheduleAIGeneration(auditId: string) {
+  if (!isOpenAIAvailable() || !isOpenAIAutoGenerateEnabled()) return;
+
+  after(async () => {
+    try {
+      await generateAIRecommendations(auditId);
+    } catch (error) {
+      console.error(`[Audit ${auditId}] AI generation failed:`, error);
     }
   });
 }
