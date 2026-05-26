@@ -4,6 +4,8 @@ import { processAudit } from "@/lib/audit/process-audit";
 /**
  * Run a full audit after the HTTP response is sent.
  * Required on Vercel serverless — fire-and-forget promises are killed when the lambda freezes.
+ *
+ * Route handlers must export literal maxDuration values (300 audit, 120 refresh) — see vercel.json.
  */
 export function scheduleAudit(auditId: string, url: string) {
   after(async () => {
@@ -14,9 +16,3 @@ export function scheduleAudit(auditId: string, url: string) {
     }
   });
 }
-
-/** Max seconds for audit background work (crawl + APIs + optional AI). Vercel Pro allows up to 300. */
-export const AUDIT_MAX_DURATION = 300;
-
-/** Max seconds for single integration refresh (PageSpeed can be slow). */
-export const REFRESH_MAX_DURATION = 120;

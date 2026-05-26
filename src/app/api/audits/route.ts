@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { formatUrl, getDomain } from "@/lib/utils";
-import { AUDIT_MAX_DURATION, scheduleAudit } from "@/lib/audit/schedule-audit";
+import { scheduleAudit } from "@/lib/audit/schedule-audit";
 import { resolveClientIp } from "@/lib/request-ip";
 
-export const maxDuration = AUDIT_MAX_DURATION;
+/** Vercel Pro allows up to 300s for background audit work (crawl + APIs + AI). */
+export const maxDuration = 300;
 
 export async function POST(request: Request) {
   try {

@@ -5,9 +5,9 @@ import {
   refreshAuditIntegration,
 } from "@/lib/audit/integration-refresh";
 import { toPublicAuditError } from "@/lib/audit/public-errors";
-import { REFRESH_MAX_DURATION } from "@/lib/audit/schedule-audit";
 
-export const maxDuration = REFRESH_MAX_DURATION;
+/** PageSpeed refresh can take up to ~2 minutes. */
+export const maxDuration = 120;
 
 export async function POST(
   request: Request,
