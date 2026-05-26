@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Globe, Loader2 } from "lucide-react";
-import { auditLoadingSteps } from "@/lib/config";
+import { ArrowRight, Globe } from "lucide-react";
+import { AuditProgressCard, useAuditLoadingSteps } from "@/components/audit/audit-progress-card";
 import { resolveVisitorIp } from "@/lib/client-ip";
 import { formatPublicAuditError, toPublicAuditError } from "@/lib/audit/public-errors";
 import { cn } from "@/lib/utils";
@@ -22,8 +22,8 @@ export function AuditUrlForm({
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [stepIndex, setStepIndex] = useState(0);
   const [error, setError] = useState("");
+  const { stepIndex, startedAt } = useAuditLoadingSteps(loading);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,11 +31,6 @@ export function AuditUrlForm({
 
     setLoading(true);
     setError("");
-    setStepIndex(0);
-
-    const stepInterval = setInterval(() => {
-      setStepIndex((prev) => Math.min(prev + 1, auditLoadingSteps.length - 1));
-    }, 4000);
 
     try {
       const clientIp = await resolveVisitorIp();
@@ -57,10 +52,8 @@ export function AuditUrlForm({
         const statusRes = await fetch(`/api/audits/${id}`);
         const audit = await statusRes.json();
         if (audit.status === "completed") {
-          clearInterval(stepInterval);
           router.push(`/audits/${id}`);
         } else if (audit.status === "failed") {
-          clearInterval(stepInterval);
           setError(formatPublicAuditError(audit.errorMessage));
           setLoading(false);
         } else {
@@ -70,7 +63,6 @@ export function AuditUrlForm({
 
       setTimeout(poll, 2000);
     } catch (err) {
-      clearInterval(stepInterval);
       setError(toPublicAuditError(err));
       setLoading(false);
     }
@@ -78,36 +70,13 @@ export function AuditUrlForm({
 
   if (loading) {
     return (
-      <div
-        className={cn(
-          "rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm",
-          variant === "hero" && "p-8",
-          className
-        )}
-      >
-        <Loader2 className="mx-auto h-9 w-9 animate-spin text-brand-600" />
-        <p className="mt-4 text-base font-medium text-slate-900">
-          Analyzing your website…
-        </p>
-        <p className="mt-1 animate-pulse-soft text-sm text-brand-600">
-          {auditLoadingSteps[stepIndex]}
-        </p>
-        {stepIndex >= auditLoadingSteps.length - 1 && (
-          <p className="mt-2 text-xs leading-relaxed text-slate-500">
-            Finishing PageSpeed and API checks — usually 1–3 minutes for most sites.
-          </p>
-        )}
-        <div className="mx-auto mt-6 max-w-sm">
-          <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
-            <div
-              className="h-full rounded-full bg-brand-600 transition-all duration-500"
-              style={{
-                width: `${((stepIndex + 1) / auditLoadingSteps.length) * 100}%`,
-              }}
-            />
-          </div>
-        </div>
-      </div>
+      <AuditProgressCard
+        title="Analyzing your website…"
+        stepIndex={stepIndex}
+        startedAt={startedAt}
+        url={url.trim()}
+        className={cn(variant === "hero" && "p-8", className)}
+      />
     );
   }
 
