@@ -35,7 +35,7 @@ export function AuditUrlForm({
 
     const stepInterval = setInterval(() => {
       setStepIndex((prev) => Math.min(prev + 1, auditLoadingSteps.length - 1));
-    }, 2500);
+    }, 4000);
 
     try {
       const clientIp = await resolveVisitorIp();
@@ -92,6 +92,11 @@ export function AuditUrlForm({
         <p className="mt-1 animate-pulse-soft text-sm text-brand-600">
           {auditLoadingSteps[stepIndex]}
         </p>
+        {stepIndex >= auditLoadingSteps.length - 1 && (
+          <p className="mt-2 text-xs leading-relaxed text-slate-500">
+            Finishing PageSpeed and API checks — usually 1–3 minutes for most sites.
+          </p>
+        )}
         <div className="mx-auto mt-6 max-w-sm">
           <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
             <div
