@@ -1,13 +1,13 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { isAdminRole, type AdminRole } from "@/lib/auth/roles";
 
 export const SESSION_COOKIE = "flexiseo_admin_session";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
-
 export type SessionPayload = {
   sub: string;
   email: string;
-  role: string;
+  role: AdminRole;
 };
 
 function getAuthSecret(): Uint8Array {
@@ -31,10 +31,12 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
   try {
     const { payload } = await jwtVerify(token, getAuthSecret());
     if (!payload.sub || typeof payload.email !== "string") return null;
+    const role = typeof payload.role === "string" ? payload.role : "";
+    if (!isAdminRole(role)) return null;
     return {
       sub: payload.sub,
       email: payload.email,
-      role: typeof payload.role === "string" ? payload.role : "admin",
+      role,
     };
   } catch {
     return null;

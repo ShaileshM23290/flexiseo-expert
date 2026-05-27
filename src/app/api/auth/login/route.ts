@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { verifyPassword } from "@/lib/auth/password";
 import { createSessionToken, setSessionCookie } from "@/lib/auth/session";
+import { isAdminRole } from "@/lib/auth/roles";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -15,7 +16,7 @@ export async function POST(request: Request) {
     const email = body.email.toLowerCase().trim();
 
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user || user.role !== "admin") {
+    if (!user || !isAdminRole(user.role)) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 

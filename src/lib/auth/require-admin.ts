@@ -1,10 +1,7 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth/session";
+import { requireStaff } from "@/lib/auth/require-staff";
 
+/** @deprecated Use requireStaff() or requireAdminRole() */
 export async function requireAdmin() {
-  const session = await getSession();
-  if (!session || session.role !== "admin") {
-    redirect("/admin/login");
-  }
-  return session;
+  return requireStaff();
 }

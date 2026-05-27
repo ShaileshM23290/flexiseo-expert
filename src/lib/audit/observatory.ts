@@ -235,7 +235,8 @@ async function fetchMdnObservatoryScan(host: string): Promise<ObservatoryResult 
 export async function fetchObservatoryScan(
   url: string,
   localHeaders?: SecurityHeaders | null,
-  isHttps = true
+  isHttps = true,
+  options?: { refresh?: boolean; previous?: ObservatoryResult | null }
 ): Promise<ObservatoryResult> {
   let host: string;
   try {
@@ -244,9 +245,8 @@ export async function fetchObservatoryScan(
     return unavailable("Invalid URL for HTTP Observatory scan.");
   }
 
-  const local = await resolveLocalHeaders(url, localHeaders, isHttps);
-
-  const useLocalFallback = () => {
+  const useLocalFallback = async (liveFetch: boolean) => {
+    const local = await resolveLocalHeaders(url, liveFetch ? null : localHeaders, isHttps);
     if (!local) {
       return unavailable(
         "MDN Observatory is unavailable and we could not fetch your site's HTTP headers."
@@ -255,8 +255,36 @@ export async function fetchObservatoryScan(
     return gradeSecurityHeadersLocally(local.headers, local.isHttps, local.liveFetch);
   };
 
+  if (options?.refresh) {
+    const live = await resolveLocalHeaders(url, null, isHttps);
+    if (live) {
+      const liveResult = gradeSecurityHeadersLocally(live.headers, live.isHttps, true);
+      const mdn = await fetchMdnObservatoryScan(host);
+      const previous = options.previous;
+
+      if (
+        mdn &&
+        (!previous ||
+          mdn.grade !== previous.grade ||
+          mdn.score !== previous.score ||
+          previous.source !== "mozilla")
+      ) {
+        return mdn;
+      }
+
+      return liveResult;
+    }
+  }
+
+  const local = await resolveLocalHeaders(url, localHeaders, isHttps);
+
   const mdn = await fetchMdnObservatoryScan(host);
   if (mdn) return mdn;
 
-  return useLocalFallback();
+  if (!local) {
+    return unavailable(
+      "MDN Observatory is unavailable and we could not fetch your site's HTTP headers."
+    );
+  }
+  return gradeSecurityHeadersLocally(local.headers, local.isHttps, local.liveFetch);
 }

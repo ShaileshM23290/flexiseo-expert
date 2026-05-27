@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { verifyPassword, hashPassword } from "@/lib/auth/password";
+import { canAccessAdmin } from "@/lib/auth/roles";
 import { getSession } from "@/lib/auth/session";
 
 const schema = z.object({
@@ -11,7 +12,7 @@ const schema = z.object({
 
 export async function POST(request: Request) {
   const session = await getSession();
-  if (!session || session.role !== "admin") {
+  if (!session || !canAccessAdmin(session.role)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

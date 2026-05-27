@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
+import { BuyCoffeeButton } from "@/components/support/buy-coffee-button";
 import { siteConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +28,8 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <BuyCoffeeButton variant="header" />
           <Link
             href="/audit"
             className="hidden rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-700 hover:shadow md:inline-flex"
@@ -58,6 +60,11 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
+            <BuyCoffeeButton
+              variant="header"
+              className="mt-1 inline-flex w-full justify-center sm:hidden"
+              onOpen={() => setMobileOpen(false)}
+            />
             <Link
               href="/audit"
               onClick={() => setMobileOpen(false)}

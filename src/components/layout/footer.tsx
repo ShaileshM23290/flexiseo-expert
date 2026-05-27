@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { FooterLogo } from "@/components/layout/footer-logo";
+import { BuyCoffeeButton } from "@/components/support/buy-coffee-button";
 import { siteConfig } from "@/lib/config";
 
 function InstagramIcon({ className }: { className?: string }) {
@@ -68,6 +69,9 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <BuyCoffeeButton variant="footer-inline" />
+              </li>
             </ul>
           </FooterColumn>
 
@@ -97,6 +101,9 @@ export function Footer() {
               Analyze your site
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
+            <div className="mt-3">
+              <BuyCoffeeButton variant="footer" />
+            </div>
             <div className="mt-3 flex gap-2">
               <a
                 href={siteConfig.company.instagram}

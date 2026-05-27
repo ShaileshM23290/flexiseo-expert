@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { analyzePageSpeed, groupIssues, type DetectedIssue, type PageSignals } from "./analyzer";
+import type { SecurityHeaders, PageSignals } from "./analyzer";
 import { fetchBacklinkProfile } from "./backlinks";
 import { fetchCruxData } from "./crux";
 import { fetchDnsChecks } from "./dns";
@@ -11,11 +11,15 @@ import {
   analyzeSafeBrowsing,
   analyzeW3c,
 } from "./external-analysis";
+import { analyzePageSpeed, groupIssues, type DetectedIssue } from "./analyzer";
+import type { ObservatoryResult } from "./observatory";
 import { fetchObservatoryScan } from "./observatory";
 import { fetchPageSpeedInsights } from "./pagespeed";
 import { calculateCategoryScoresFromChecks, calculateOverallScore, type ScoringContext } from "./scoring";
 import { checkSafeBrowsing } from "./safe-browsing";
 import { validateHtml } from "./w3c-validator";
+import { resolveCanonicalAuditUrl } from "./resolve-url";
+import { getDomain } from "../utils";
 
 export const INTEGRATION_IDS = [
   "openpagerank",
@@ -77,6 +81,64 @@ function issueMatchesIntegration(
   return LEGACY_TITLE_HINTS[integration].some((hint) => title.includes(hint.toLowerCase()));
 }
 
+function isHomepage(pageUrl: string, baseUrl: string): boolean {
+  try {
+    const a = new URL(pageUrl);
+    const b = new URL(baseUrl);
+    if (a.hostname.replace(/^www\./, "").toLowerCase() !== b.hostname.replace(/^www\./, "").toLowerCase()) {
+      return false;
+    }
+    const path = a.pathname.replace(/\/$/, "") || "/";
+    return path === "/" || path === "";
+  } catch {
+    return false;
+  }
+}
+
+function syncHomepageSecurityHeaders(
+  stored: StoredScoringContext,
+  headers: SecurityHeaders,
+  isHttps: boolean
+) {
+  const home =
+    stored.pageSignals.find((p) => isHomepage(p.url, stored.baseUrl)) ?? stored.pageSignals[0];
+  if (!home) return;
+  home.securityHeaders = headers;
+  home.isHttps = isHttps;
+}
+
+function syncObservatoryHeaders(
+  stored: StoredScoringContext,
+  observatory: ObservatoryResult
+) {
+  if (!observatory.available || observatory.source !== "local") return;
+  const failed = new Set(observatory.failedTests.map((t) => t.name));
+  const headers: SecurityHeaders = {
+    hsts: !failed.has("strict-transport-security"),
+    csp: !failed.has("content-security-policy"),
+    xContentType: !failed.has("x-content-type-options"),
+    xFrameOptions: !failed.has("x-frame-options"),
+    referrerPolicy: !failed.has("referrer-policy"),
+    permissionsPolicy: !failed.has("permissions-policy"),
+  };
+  syncHomepageSecurityHeaders(stored, headers, stored.pageSignals[0]?.isHttps ?? true);
+}
+
+function recalculateAuditScores(
+  stored: StoredScoringContext | undefined,
+  performanceData: Record<string, unknown>,
+  schemaSummary: Record<string, unknown>
+) {
+  if (!stored?.pageSignals?.length) {
+    return null;
+  }
+
+  const scoringContext = buildScoringContext(stored, performanceData, schemaSummary);
+  const categoryScores = calculateCategoryScoresFromChecks(scoringContext);
+  const overallScore = calculateOverallScore(categoryScores);
+  return { categoryScores, overallScore };
+}
+
 function buildScoringContext(
   stored: StoredScoringContext,
   performanceData: Record<string, unknown>,
@@ -114,7 +176,8 @@ async function fetchIntegrationIssues(
   integration: IntegrationId,
   baseUrl: string,
   performanceData: Record<string, unknown>,
-  schemaSummary: Record<string, unknown>
+  schemaSummary: Record<string, unknown>,
+  options?: { refresh?: boolean }
 ): Promise<DetectedIssue[]> {
   switch (integration) {
     case "openpagerank": {
@@ -136,28 +199,18 @@ async function fetchIntegrationIssues(
     }
     case "observatory": {
       const stored = performanceData._scoringContext as StoredScoringContext | undefined;
-      const home =
-        stored?.pageSignals?.find((p) => {
-          try {
-            const u = new URL(p.url);
-            const b = new URL(baseUrl);
-            const path = u.pathname.replace(/\/$/, "") || "/";
-            return (
-              u.hostname.replace(/^www\./, "") === b.hostname.replace(/^www\./, "") &&
-              (path === "/" || path === "")
-            );
-          } catch {
-            return false;
-          }
-        }) ?? stored?.pageSignals?.[0];
-      const observatory = await fetchObservatoryScan(
-        baseUrl,
-        home?.securityHeaders,
-        home?.isHttps ?? true
-      );
       const trust = (performanceData.trust as Record<string, unknown>) ?? {};
+      const previous = trust.observatory as ObservatoryResult | undefined;
+      const observatory = await fetchObservatoryScan(baseUrl, null, true, {
+        refresh: options?.refresh,
+        previous: previous ?? null,
+      });
       trust.observatory = observatory;
       performanceData.trust = trust;
+      if (stored) {
+        syncObservatoryHeaders(stored, observatory);
+        performanceData._scoringContext = stored;
+      }
       return analyzeObservatory(baseUrl, observatory);
     }
     case "safe-browsing": {
@@ -199,13 +252,20 @@ export async function refreshAuditIntegration(auditId: string, integration: Inte
 
   const performanceData = JSON.parse(audit.performanceData ?? "{}") as Record<string, unknown>;
   const schemaSummary = JSON.parse(audit.schemaSummary ?? "{}") as Record<string, unknown>;
-  const stored = performanceData._scoringContext as StoredScoringContext | undefined;
+  let stored = performanceData._scoringContext as StoredScoringContext | undefined;
+
+  const canonicalUrl = await resolveCanonicalAuditUrl(audit.url);
+  if (stored && stored.baseUrl !== canonicalUrl) {
+    stored = { ...stored, baseUrl: canonicalUrl };
+    performanceData._scoringContext = stored;
+  }
 
   const newIntegrationIssues = await fetchIntegrationIssues(
     integration,
     audit.url,
     performanceData,
-    schemaSummary
+    schemaSummary,
+    { refresh: true }
   );
 
   const removeIds = audit.issues
@@ -250,6 +310,8 @@ export async function refreshAuditIntegration(auditId: string, integration: Inte
   );
 
   const updateData: {
+    url?: string;
+    domain?: string;
     performanceData: string;
     schemaSummary: string;
     totalIssues: number;
@@ -267,11 +329,20 @@ export async function refreshAuditIntegration(auditId: string, integration: Inte
     noticeCount: grouped.filter((g) => g.severity === "notice").length,
   };
 
-  if (stored?.pageSignals?.length) {
-    const scoringContext = buildScoringContext(stored, performanceData, schemaSummary);
-    const categoryScores = calculateCategoryScoresFromChecks(scoringContext);
-    updateData.categoryScores = JSON.stringify(categoryScores);
-    updateData.overallScore = calculateOverallScore(categoryScores);
+  if (canonicalUrl !== audit.url) {
+    updateData.url = canonicalUrl;
+    updateData.domain = getDomain(canonicalUrl);
+  }
+
+  const scores = recalculateAuditScores(stored, performanceData, schemaSummary);
+  if (scores) {
+    updateData.categoryScores = JSON.stringify(scores.categoryScores);
+    updateData.overallScore = scores.overallScore;
+  }
+
+  if (stored) {
+    performanceData._scoringContext = stored;
+    updateData.performanceData = JSON.stringify(performanceData);
   }
 
   await prisma.audit.update({
@@ -279,9 +350,18 @@ export async function refreshAuditIntegration(auditId: string, integration: Inte
     data: updateData,
   });
 
+  const categoryScores = scores
+    ? scores.categoryScores
+    : JSON.parse(audit.categoryScores ?? "{}") as Record<string, number>;
+
   return {
     integration,
-    overallScore: updateData.overallScore ?? audit.overallScore,
-    scoresUpdated: Boolean(stored?.pageSignals?.length),
+    overallScore: scores?.overallScore ?? audit.overallScore,
+    categoryScores,
+    totalIssues: updateData.totalIssues,
+    criticalCount: updateData.criticalCount,
+    warningCount: updateData.warningCount,
+    noticeCount: updateData.noticeCount,
+    scoresUpdated: Boolean(scores),
   };
 }

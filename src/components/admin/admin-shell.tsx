@@ -7,10 +7,12 @@ import {
   ExternalLink,
   LogOut,
   Menu,
+  RefreshCw,
   X,
 } from "lucide-react";
-import { useState } from "react";
-import { adminNavItems, isAdminNavActive } from "@/lib/admin/nav";
+import { useState, useTransition } from "react";
+import { getAdminNavItems, isAdminNavActive } from "@/lib/admin/nav";
+import { roleLabel, type AdminRole } from "@/lib/auth/roles";
 import { siteConfig } from "@/lib/config";
 
 const pageMeta: Record<string, { title: string; description: string }> = {
@@ -24,25 +26,38 @@ const pageMeta: Record<string, { title: string; description: string }> = {
   },
   "/admin/ips": {
     title: "IP Usage",
-    description: "Track audit activity by IP address — restrictions coming soon.",
+    description: "Track audit activity by IP address.",
+  },
+  "/admin/users": {
+    title: "Users",
+    description: "Manage who can sign in to the admin panel.",
   },
   "/admin/settings": {
     title: "Settings",
-    description: "Account, password, and system configuration.",
+    description: "Password and system configuration.",
   },
 };
 
 type AdminShellProps = {
   adminEmail: string;
+  adminRole: AdminRole;
   children: React.ReactNode;
 };
 
-export function AdminShell({ adminEmail, children }: AdminShellProps) {
+export function AdminShell({ adminEmail, adminRole, children }: AdminShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [refreshing, startRefresh] = useTransition();
 
   const meta = pageMeta[pathname] ?? { title: "Admin", description: "" };
+  const navItems = getAdminNavItems(adminRole);
+
+  function handleRefresh() {
+    startRefresh(() => {
+      router.refresh();
+    });
+  }
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -60,7 +75,7 @@ export function AdminShell({ adminEmail, children }: AdminShellProps) {
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4">
-        {adminNavItems.map((item) => {
+        {navItems.map((item) => {
           const active = isAdminNavActive(item.href, pathname);
           const Icon = item.icon;
           return (
@@ -83,6 +98,7 @@ export function AdminShell({ adminEmail, children }: AdminShellProps) {
 
       <div className="border-t border-slate-200 p-4">
         <p className="truncate text-xs text-slate-500">{adminEmail}</p>
+        <p className="mt-0.5 text-xs font-medium capitalize text-slate-400">{roleLabel(adminRole)}</p>
         <div className="mt-3 flex flex-col gap-2">
           <Link
             href="/"
@@ -107,7 +123,6 @@ export function AdminShell({ adminEmail, children }: AdminShellProps) {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Mobile overlay */}
       {mobileOpen && (
         <button
           type="button"
@@ -117,7 +132,6 @@ export function AdminShell({ adminEmail, children }: AdminShellProps) {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-slate-200 bg-white transition-transform lg:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
@@ -134,7 +148,6 @@ export function AdminShell({ adminEmail, children }: AdminShellProps) {
         {sidebar}
       </aside>
 
-      {/* Main content */}
       <div className="lg:pl-64">
         <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
           <div className="flex items-center gap-4 px-4 py-4 sm:px-6">
@@ -152,6 +165,16 @@ export function AdminShell({ adminEmail, children }: AdminShellProps) {
                 <p className="mt-0.5 text-sm text-slate-500">{meta.description}</p>
               )}
             </div>
+            <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              title="Refresh page data"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+            >
+              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
             <Link
               href="/audit"
               className="hidden items-center gap-1 text-sm font-medium text-brand-600 hover:text-brand-700 sm:inline-flex"

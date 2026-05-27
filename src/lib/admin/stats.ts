@@ -25,14 +25,23 @@ export type IpStatRow = {
   firstSeen: Date;
 };
 
-export type AdminOverview = {
+export type AdminOverviewStats = {
   totalAudits: number;
   uniqueIps: number;
   uniqueDomains: number;
   auditsToday: number;
-  topIps: IpStatRow[];
-  recentAudits: AuditListItem[];
 };
+
+const auditSelect = {
+  id: true,
+  url: true,
+  domain: true,
+  status: true,
+  clientIp: true,
+  pagesCrawled: true,
+  overallScore: true,
+  createdAt: true,
+} as const;
 
 async function enrichIpRow(row: {
   clientIp: string | null;
@@ -65,43 +74,19 @@ async function enrichIpRow(row: {
   };
 }
 
-const auditSelect = {
-  id: true,
-  url: true,
-  domain: true,
-  status: true,
-  clientIp: true,
-  pagesCrawled: true,
-  overallScore: true,
-  createdAt: true,
-} as const;
-
-export async function getAdminOverview(): Promise<AdminOverview> {
+export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
 
-  const [totalAudits, auditsToday, domainGroups, ipGroups, recentAudits] = await Promise.all([
+  const [totalAudits, auditsToday, domainGroups, ipGroups] = await Promise.all([
     prisma.audit.count(),
     prisma.audit.count({ where: { createdAt: { gte: startOfToday } } }),
     prisma.audit.groupBy({ by: ["domain"], _count: { id: true } }),
     prisma.audit.groupBy({
       by: ["clientIp"],
       _count: { id: true },
-      _min: { createdAt: true },
-      _max: { createdAt: true },
-    }),
-    prisma.audit.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      select: auditSelect,
     }),
   ]);
-
-  const topIpKeys = [...ipGroups]
-    .sort((a, b) => b._count.id - a._count.id)
-    .slice(0, 5);
-
-  const topIps = await Promise.all(topIpKeys.map(enrichIpRow));
 
   const uniqueIps = ipGroups.filter((row) => row.clientIp !== null).length;
 
@@ -110,6 +95,35 @@ export async function getAdminOverview(): Promise<AdminOverview> {
     uniqueIps,
     uniqueDomains: domainGroups.length,
     auditsToday,
+  };
+}
+
+export type AdminOverview = AdminOverviewStats & {
+  topIps: IpStatRow[];
+  recentAudits: AuditListItem[];
+};
+
+export async function getAdminOverview(): Promise<AdminOverview> {
+  const stats = await getAdminOverviewStats();
+
+  const ipGroups = await prisma.audit.groupBy({
+    by: ["clientIp"],
+    _count: { id: true },
+    _min: { createdAt: true },
+    _max: { createdAt: true },
+  });
+
+  const topIpKeys = [...ipGroups].sort((a, b) => b._count.id - a._count.id).slice(0, 10);
+  const topIps = await Promise.all(topIpKeys.map(enrichIpRow));
+
+  const recentAudits = await prisma.audit.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 25,
+    select: auditSelect,
+  });
+
+  return {
+    ...stats,
     topIps,
     recentAudits,
   };
@@ -152,16 +166,4 @@ export async function getIpUsagePaginated(
   const items = await Promise.all(pageSlice.map(enrichIpRow));
 
   return buildPaginatedResult(items, total, page, pageSize);
-}
-
-/** @deprecated Use getAdminOverview or paginated helpers */
-export async function getAdminStats() {
-  const overview = await getAdminOverview();
-  const audits = await getAuditsPaginated({ page: "1", pageSize: "50" });
-  return {
-    ...overview,
-    byIp: overview.topIps,
-    recentAudits: audits.items,
-    allAudits: audits.items,
-  };
 }

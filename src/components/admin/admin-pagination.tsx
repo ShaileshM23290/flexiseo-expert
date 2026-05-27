@@ -8,12 +8,23 @@ type AdminPaginationProps = {
   total: number;
   totalPages: number;
   basePath: string;
+  extraQuery?: Record<string, string | undefined>;
 };
 
-function buildHref(basePath: string, page: number, pageSize: number) {
+function buildHref(
+  basePath: string,
+  page: number,
+  pageSize: number,
+  extraQuery?: Record<string, string | undefined>
+) {
   const params = new URLSearchParams();
   params.set("page", String(page));
   if (pageSize !== 25) params.set("pageSize", String(pageSize));
+  if (extraQuery) {
+    for (const [key, value] of Object.entries(extraQuery)) {
+      if (value) params.set(key, value);
+    }
+  }
   return `${basePath}?${params.toString()}`;
 }
 
@@ -23,6 +34,7 @@ export function AdminPagination({
   total,
   totalPages,
   basePath,
+  extraQuery,
 }: AdminPaginationProps) {
   if (total === 0) return null;
 
@@ -38,7 +50,7 @@ export function AdminPagination({
 
       <nav aria-label="Pagination" className="flex items-center gap-1">
         <Link
-          href={buildHref(basePath, page - 1, pageSize)}
+          href={buildHref(basePath, page - 1, pageSize, extraQuery)}
           aria-disabled={page <= 1}
           className={`inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm font-medium ${
             page <= 1
@@ -53,7 +65,7 @@ export function AdminPagination({
         {pages[0] > 1 && (
           <>
             <Link
-              href={buildHref(basePath, 1, pageSize)}
+              href={buildHref(basePath, 1, pageSize, extraQuery)}
               className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               1
@@ -65,7 +77,7 @@ export function AdminPagination({
         {pages.map((p) => (
           <Link
             key={p}
-            href={buildHref(basePath, p, pageSize)}
+            href={buildHref(basePath, p, pageSize, extraQuery)}
             aria-current={p === page ? "page" : undefined}
             className={`rounded-lg border px-3 py-1.5 text-sm font-medium ${
               p === page
@@ -83,7 +95,7 @@ export function AdminPagination({
               <span className="px-1 text-slate-400">…</span>
             )}
             <Link
-              href={buildHref(basePath, totalPages, pageSize)}
+              href={buildHref(basePath, totalPages, pageSize, extraQuery)}
               className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               {totalPages}
@@ -92,7 +104,7 @@ export function AdminPagination({
         )}
 
         <Link
-          href={buildHref(basePath, page + 1, pageSize)}
+          href={buildHref(basePath, page + 1, pageSize, extraQuery)}
           aria-disabled={page >= totalPages}
           className={`inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm font-medium ${
             page >= totalPages

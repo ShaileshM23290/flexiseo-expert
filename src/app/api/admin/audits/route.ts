@@ -1,33 +1,29 @@
 import { NextResponse } from "next/server";
-import { getAuditsPaginated } from "@/lib/admin/stats";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { canDeleteAllAudits } from "@/lib/auth/roles";
 import { getSession } from "@/lib/auth/session";
 
-export async function GET(request: Request) {
+const deleteSchema = z.object({
+  ids: z.array(z.string()).min(1),
+});
+
+export async function DELETE(request: Request) {
   const session = await getSession();
-  if (!session || session.role !== "admin") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { searchParams } = new URL(request.url);
-  const result = await getAuditsPaginated({
-    page: searchParams.get("page") ?? undefined,
-    pageSize: searchParams.get("pageSize") ?? undefined,
-  });
-
-  return NextResponse.json(result);
-}
-
-export async function DELETE() {
-  const session = await getSession();
-  if (!session || session.role !== "admin") {
+  if (!session || !canDeleteAllAudits(session.role)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const result = await prisma.audit.deleteMany({});
+    const body = deleteSchema.parse(await request.json());
+    const result = await prisma.audit.deleteMany({
+      where: { id: { in: body.ids } },
+    });
     return NextResponse.json({ deleted: result.count });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
     console.error("Bulk delete audits error:", error);
     return NextResponse.json({ error: "Failed to delete audits" }, { status: 500 });
   }

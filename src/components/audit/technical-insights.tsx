@@ -27,11 +27,21 @@ import type { PageSpeedResult } from "@/lib/audit/pagespeed";
 import type { SafeBrowsingResult } from "@/lib/audit/safe-browsing";
 import type { W3cValidationResult } from "@/lib/audit/w3c-validator";
 
+export interface AuditRefreshResult {
+  overallScore: number;
+  categoryScores: Record<string, number>;
+  totalIssues: number;
+  criticalCount: number;
+  warningCount: number;
+  noticeCount: number;
+  scoresUpdated: boolean;
+}
+
 interface TechnicalInsightsProps {
   auditId: string;
   performanceData: Record<string, unknown> | null;
   schemaSummary: Record<string, unknown> | null;
-  onUpdated?: () => void;
+  onUpdated?: (result?: AuditRefreshResult) => void | Promise<void>;
 }
 
 function ratingColor(rating: string): string {
@@ -173,7 +183,15 @@ export function TechnicalInsightsPanel({
       if (!res.ok) {
         throw new Error(data.error ?? "Refresh failed");
       }
-      onUpdated?.();
+      await onUpdated?.({
+        overallScore: data.overallScore,
+        categoryScores: data.categoryScores ?? {},
+        totalIssues: data.totalIssues,
+        criticalCount: data.criticalCount,
+        warningCount: data.warningCount,
+        noticeCount: data.noticeCount,
+        scoresUpdated: Boolean(data.scoresUpdated),
+      });
     } catch (err) {
       setRefreshError(toPublicAuditError(err));
     } finally {

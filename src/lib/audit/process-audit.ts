@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db";
+import { getDomain } from "@/lib/utils";
 import { runAudit } from "@/lib/audit/runner";
+import { resolveCanonicalAuditUrl } from "@/lib/audit/resolve-url";
 import { toPublicAuditError } from "@/lib/audit/public-errors";
 import { scheduleAIGeneration } from "@/lib/audit/schedule-audit";
 import { isOpenAIAvailable, isOpenAIAutoGenerateEnabled } from "@/lib/ai/seo-recommendations";
@@ -36,7 +38,8 @@ export async function resetAuditForRerun(auditId: string) {
 
 export async function processAudit(auditId: string, url: string) {
   try {
-    const result = await runAudit(url);
+    const canonicalUrl = await resolveCanonicalAuditUrl(url);
+    const result = await runAudit(canonicalUrl);
 
     const pageRecords = await Promise.all(
       result.pages.map((page) =>
@@ -81,6 +84,8 @@ export async function processAudit(auditId: string, url: string) {
     await prisma.audit.update({
       where: { id: auditId },
       data: {
+        url: canonicalUrl,
+        domain: getDomain(canonicalUrl),
         status: "completed",
         overallScore: result.overallScore,
         categoryScores: JSON.stringify(result.categoryScores),

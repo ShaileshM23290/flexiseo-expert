@@ -11,9 +11,11 @@ import {
   IssueCard,
   ScoreRing,
 } from "@/components/audit/report-cards";
+import { CoffeeSupportCard } from "@/components/support/coffee-support-card";
+import { CoffeeSupportModal } from "@/components/support/coffee-support-modal";
 import { PageBreakdownTable, type PageIssue } from "@/components/audit/page-breakdown";
 import { AuditProgressCard, useAuditLoadingSteps } from "@/components/audit/audit-progress-card";
-import { TechnicalInsightsPanel } from "@/components/audit/technical-insights";
+import { TechnicalInsightsPanel, type AuditRefreshResult } from "@/components/audit/technical-insights";
 import { parseJsonField } from "@/lib/parse-json";
 import { formatPublicAuditError, toPublicAuditError } from "@/lib/audit/public-errors";
 import {
@@ -138,6 +140,28 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
       window.clearTimeout(stop);
     };
   }, [audit?.status, audit?.aiSummary, fetchAudit]);
+
+  const handleIntegrationUpdated = useCallback(
+    async (result?: AuditRefreshResult) => {
+      if (result?.scoresUpdated) {
+        setAudit((prev) =>
+          prev
+            ? {
+                ...prev,
+                overallScore: result.overallScore,
+                categoryScores: JSON.stringify(result.categoryScores),
+                totalIssues: result.totalIssues,
+                criticalCount: result.criticalCount,
+                warningCount: result.warningCount,
+                noticeCount: result.noticeCount,
+              }
+            : prev
+        );
+      }
+      await fetchAudit();
+    },
+    [fetchAudit]
+  );
 
   async function handleDownloadPdf() {
     setDownloadingPdf(true);
@@ -288,6 +312,7 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
 
   return (
     <div className="px-4 py-10 sm:px-6">
+      <CoffeeSupportModal auditId={audit.id} auditUrl={audit.url} />
       <div className="mx-auto max-w-6xl">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <Link
@@ -421,7 +446,7 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
           auditId={audit.id}
           performanceData={performanceData}
           schemaSummary={schemaSummary}
-          onUpdated={fetchAudit}
+          onUpdated={handleIntegrationUpdated}
         />
 
         {executiveSummary && (
@@ -435,6 +460,10 @@ export default function AuditReportPage({ auditId }: { auditId: string }) {
             <ActionPlanCard plan={actionPlan} />
           </div>
         )}
+
+        <div className="mt-8">
+          <CoffeeSupportCard auditId={audit.id} auditUrl={audit.url} />
+        </div>
 
         <div className="mt-8">
           <div className="mb-4 flex flex-wrap gap-2">

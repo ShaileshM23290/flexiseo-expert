@@ -27,7 +27,21 @@ type AuditRow = {
   createdAt: Date | string;
 };
 
-export function AuditsTable({ audits, showIp = true }: { audits: AuditRow[]; showIp?: boolean }) {
+export function AuditsTable({
+  audits,
+  showIp = true,
+  selectable = false,
+  selectedIds,
+  onToggleOne,
+  onToggleAll,
+}: {
+  audits: AuditRow[];
+  showIp?: boolean;
+  selectable?: boolean;
+  selectedIds?: Set<string>;
+  onToggleOne?: (id: string) => void;
+  onToggleAll?: (checked: boolean) => void;
+}) {
   if (audits.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center text-sm text-slate-500">
@@ -36,11 +50,30 @@ export function AuditsTable({ audits, showIp = true }: { audits: AuditRow[]; sho
     );
   }
 
+  const allSelected =
+    selectable && audits.length > 0 && audits.every((a) => selectedIds?.has(a.id));
+  const someSelected =
+    selectable && audits.some((a) => selectedIds?.has(a.id)) && !allSelected;
+
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
       <table className="min-w-full divide-y divide-slate-200 text-sm">
         <thead className="bg-slate-50">
           <tr>
+            {selectable && (
+              <th className="w-10 px-4 py-3">
+                <input
+                  type="checkbox"
+                  aria-label="Select all audits on this page"
+                  checked={allSelected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = someSelected;
+                  }}
+                  onChange={(e) => onToggleAll?.(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                />
+              </th>
+            )}
             <th className="px-4 py-3 text-left font-medium text-slate-500">URL</th>
             <th className="px-4 py-3 text-left font-medium text-slate-500">Domain</th>
             {showIp && <th className="px-4 py-3 text-left font-medium text-slate-500">IP</th>}
@@ -54,6 +87,17 @@ export function AuditsTable({ audits, showIp = true }: { audits: AuditRow[]; sho
         <tbody className="divide-y divide-slate-100">
           {audits.map((audit) => (
             <tr key={audit.id} className="hover:bg-slate-50/80">
+              {selectable && (
+                <td className="px-4 py-3">
+                  <input
+                    type="checkbox"
+                    aria-label={`Select audit ${audit.domain}`}
+                    checked={selectedIds?.has(audit.id) ?? false}
+                    onChange={() => onToggleOne?.(audit.id)}
+                    className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                  />
+                </td>
+              )}
               <td className="max-w-md truncate px-4 py-3 font-medium text-slate-900">{audit.url}</td>
               <td className="px-4 py-3 text-slate-600">{audit.domain}</td>
               {showIp && (

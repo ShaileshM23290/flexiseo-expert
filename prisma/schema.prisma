@@ -123,3 +123,33 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+
+model SupportPayment {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  type              String    @default("coffee")
+  status            String    @default("pending")
+  amountPaise       Int
+  currency          String    @default("INR")
+  razorpayOrderId   String    @unique
+  razorpayPaymentId String?
+  auditId           String?   @db.ObjectId
+  clientIp          String?
+  userAgent         String?
+  payerEmail        String?
+  payerName         String?
+  payerContact      String?
+  paymentMethod     String?
+  errorCode         String?
+  errorDescription  String?
+  webhookEvent      String?
+  metadata          String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  paidAt            DateTime?
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([auditId])
+  @@index([type])
+  @@index([razorpayPaymentId])
+}

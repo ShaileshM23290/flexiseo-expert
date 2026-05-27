@@ -11,8 +11,8 @@ function createPrismaClient() {
 function getPrismaClient(): PrismaClient {
   const cached = globalForPrisma.prisma;
 
-  // Dev hot reload can keep a PrismaClient from before schema changes (e.g. missing `user`).
-  if (cached && !("user" in cached)) {
+  // Dev hot reload can keep a PrismaClient from before schema changes.
+  if (cached && (!("user" in cached) || !("supportPayment" in cached))) {
     void (cached as PrismaClient).$disconnect();
     globalForPrisma.prisma = undefined;
   }

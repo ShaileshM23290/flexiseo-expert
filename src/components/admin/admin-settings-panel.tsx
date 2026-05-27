@@ -5,7 +5,13 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 import type { AdminSettingsInfo } from "@/lib/admin/settings";
 import { formatAdminDateShort } from "@/lib/admin/format";
 
-export function AdminSettingsPanel({ settings }: { settings: AdminSettingsInfo }) {
+export function AdminSettingsPanel({
+  settings,
+  showSystemStatus = true,
+}: {
+  settings: AdminSettingsInfo;
+  showSystemStatus?: boolean;
+}) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -145,6 +151,7 @@ export function AdminSettingsPanel({ settings }: { settings: AdminSettingsInfo }
         </form>
       </section>
 
+      {showSystemStatus && (
       <section className="glass-card rounded-xl p-6">
         <h2 className="text-base font-semibold text-slate-900">System status</h2>
         <p className="mt-1 text-sm text-slate-500">Integration health for the audit engine.</p>
@@ -160,6 +167,7 @@ export function AdminSettingsPanel({ settings }: { settings: AdminSettingsInfo }
           <StatusRow label="IP restriction rules" ok={false} note="Coming soon" />
         </ul>
       </section>
+      )}
     </div>
   );
 }

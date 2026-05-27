@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { formatUrl, getDomain } from "@/lib/utils";
+import { resolveCanonicalAuditUrl } from "@/lib/audit/resolve-url";
 import { scheduleAudit } from "@/lib/audit/schedule-audit";
 import { resolveClientIp } from "@/lib/request-ip";
 
@@ -10,7 +11,7 @@ export const maxDuration = 300;
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const url = formatUrl(body.url ?? "");
+    const url = await resolveCanonicalAuditUrl(body.url ?? "");
 
     if (!url) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { AdminAuditsPanel } from "@/components/admin/admin-audits-panel";
 import { getAuditsPaginated } from "@/lib/admin/stats";
+import { requireStaff } from "@/lib/auth/require-staff";
+import { canDeleteAllAudits } from "@/lib/auth/roles";
 import { siteConfig } from "@/lib/config";
 import { pageMetadata } from "@/lib/seo";
 
@@ -16,11 +18,13 @@ export default async function AdminAuditsPage({
 }: {
   searchParams: Promise<{ page?: string; pageSize?: string }>;
 }) {
+  const session = await requireStaff();
   const params = await searchParams;
   const result = await getAuditsPaginated(params);
 
   return (
     <AdminAuditsPanel
+      canDeleteAll={canDeleteAllAudits(session.role)}
       total={result.total}
       page={result.page}
       pageSize={result.pageSize}

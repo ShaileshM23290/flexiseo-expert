@@ -1,4 +1,5 @@
 import { formatUrl, getDomain } from "../utils";
+import { resolveCanonicalAuditUrl } from "./resolve-url";
 import { crawlerUserAgent } from "../config";
 import {
   analyzePage,
@@ -351,7 +352,7 @@ async function crawlSinglePage(
 }
 
 export async function runAudit(rawUrl: string): Promise<AuditRunResult> {
-  const baseUrl = formatUrl(rawUrl);
+  const baseUrl = await resolveCanonicalAuditUrl(rawUrl);
   const domain = getDomain(baseUrl);
 
   const [robotsTxt, httpsProbe, wwwProbe] = await Promise.all([
