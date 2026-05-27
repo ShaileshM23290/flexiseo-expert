@@ -6,7 +6,8 @@ import {
   verifyCheckoutSignature,
 } from "@/lib/payments/razorpay";
 import {
-  getCoffeeAmountOption,
+  getCoffeeAmountLabel,
+  validateCoffeeAmountPaise,
   type SupportPaymentStatus,
   type SupportPaymentType,
 } from "@/lib/payments/config";
@@ -19,10 +20,12 @@ type CreateCoffeeOrderInput = {
 };
 
 export async function createCoffeeOrder(input: CreateCoffeeOrderInput) {
-  const option = getCoffeeAmountOption(input.amountPaise);
-  if (!option) {
-    throw new Error("Invalid amount");
+  const validationError = validateCoffeeAmountPaise(input.amountPaise);
+  if (validationError) {
+    throw new Error(validationError);
   }
+
+  const amountLabel = getCoffeeAmountLabel(input.amountPaise);
 
   if (input.auditId) {
     const audit = await prisma.audit.findUnique({
@@ -44,7 +47,7 @@ export async function createCoffeeOrder(input: CreateCoffeeOrderInput) {
       auditId: input.auditId ?? null,
       clientIp: input.clientIp ?? null,
       userAgent: input.userAgent ?? null,
-      metadata: JSON.stringify({ amountLabel: option.label }),
+      metadata: JSON.stringify({ amountLabel }),
     },
   });
 
@@ -56,7 +59,7 @@ export async function createCoffeeOrder(input: CreateCoffeeOrderInput) {
         supportPaymentId: pending.id,
         type: "coffee",
         auditId: input.auditId ?? "",
-        amountLabel: option.label,
+        amountLabel,
       },
     });
 
@@ -65,7 +68,7 @@ export async function createCoffeeOrder(input: CreateCoffeeOrderInput) {
       data: {
         razorpayOrderId: order.id,
         metadata: JSON.stringify({
-          amountLabel: option.label,
+          amountLabel,
           orderStatus: order.status,
         }),
       },

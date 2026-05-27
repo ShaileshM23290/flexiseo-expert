@@ -7,7 +7,7 @@ import { isCoffeeCheckoutAvailable } from "@/components/support/use-coffee-check
 import { cn } from "@/lib/utils";
 
 type BuyCoffeeButtonProps = {
-  variant?: "header" | "footer" | "footer-inline";
+  variant?: "header" | "footer";
   className?: string;
   onOpen?: () => void;
 };
@@ -28,10 +28,8 @@ export function BuyCoffeeButton({
 
   const triggerClass =
     variant === "header"
-      ? "hidden items-center gap-1.5 rounded-lg border border-amber-200/90 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900 transition hover:border-amber-300 hover:bg-amber-100 sm:inline-flex"
-      : variant === "footer-inline"
-        ? "inline-flex items-center gap-1.5 text-sm text-amber-300 transition-colors hover:text-amber-200"
-        : "inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:border-amber-400/60 hover:bg-amber-500/20";
+      ? "hidden cursor-pointer items-center gap-1.5 rounded-lg border border-amber-200/90 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900 transition hover:border-amber-300 hover:bg-amber-100 sm:inline-flex"
+      : "inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:border-amber-400/60 hover:bg-amber-500/20";
 
   return (
     <>

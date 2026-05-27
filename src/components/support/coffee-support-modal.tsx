@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CoffeeSupportDialog } from "@/components/support/coffee-support-dialog";
 import { isCoffeeCheckoutAvailable } from "@/components/support/use-coffee-checkout";
+import { coffeeSupportCopy } from "@/lib/payments/support-copy";
 
 const DISMISS_KEY = "flexiseo_coffee_dismissed";
 const COUNT_KEY = "flexiseo_coffee_prompt_count";
@@ -46,7 +47,7 @@ export function CoffeeSupportModal({ auditId, auditUrl }: CoffeeSupportModalProp
       open={open}
       onClose={() => setOpen(false)}
       auditId={auditId}
-      description={`If this report for ${auditUrl} helped, a small tip covers our API costs.`}
+      description={coffeeSupportCopy.descriptionAuditModal(auditUrl)}
       showDismissActions
       onDismiss={(permanent) => {
         if (permanent) localStorage.setItem(DISMISS_KEY, "1");

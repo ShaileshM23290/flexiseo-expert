@@ -63,15 +63,12 @@ export function Footer() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="text-sm text-slate-300 transition-colors hover:text-brand-400"
+                    className="cursor-pointer text-sm text-slate-300 transition-colors hover:text-brand-400"
                   >
                     {item.label}
                   </Link>
                 </li>
               ))}
-              <li>
-                <BuyCoffeeButton variant="footer-inline" />
-              </li>
             </ul>
           </FooterColumn>
 
@@ -82,7 +79,7 @@ export function Footer() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="text-sm text-slate-300 transition-colors hover:text-brand-400"
+                    className="cursor-pointer text-sm text-slate-300 transition-colors hover:text-brand-400"
                   >
                     {item.label}
                   </Link>
@@ -94,14 +91,14 @@ export function Footer() {
           {/* Col 4 — CTA */}
           <FooterColumn title="Get started">
             <p className="text-sm text-slate-300">Free audit. No signup.</p>
-            <Link
-              href="/audit"
-              className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-500"
-            >
-              Analyze your site
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-            <div className="mt-3">
+            <div className="mt-3 flex w-full flex-col gap-3">
+              <Link
+                href="/audit"
+                className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-500"
+              >
+                Analyze your site
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
               <BuyCoffeeButton variant="footer" />
             </div>
             <div className="mt-3 flex gap-2">
@@ -109,7 +106,7 @@ export function Footer() {
                 href={siteConfig.company.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-700 text-slate-300 transition-colors hover:border-brand-500 hover:text-brand-400"
+                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-slate-700 text-slate-300 transition-colors hover:border-brand-500 hover:text-brand-400"
                 aria-label="Instagram"
               >
                 <InstagramIcon className="h-3.5 w-3.5" />
@@ -118,7 +115,7 @@ export function Footer() {
                 href={siteConfig.company.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-700 text-slate-300 transition-colors hover:border-brand-500 hover:text-brand-400"
+                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-slate-700 text-slate-300 transition-colors hover:border-brand-500 hover:text-brand-400"
                 aria-label="LinkedIn"
               >
                 <LinkedInIcon className="h-3.5 w-3.5" />
@@ -135,7 +132,7 @@ export function Footer() {
               href={siteConfig.company.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-300 hover:text-brand-400"
+              className="cursor-pointer text-slate-300 hover:text-brand-400"
             >
               {siteConfig.company.name}
             </a>

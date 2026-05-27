@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { isRazorpayConfigured } from "@/lib/payments/config";
+import { isRazorpayConfigured, validateCoffeeAmountPaise } from "@/lib/payments/config";
 import { buildCheckoutDescription } from "@/lib/payments/razorpay";
 import { createCoffeeOrder } from "@/lib/payments/support-payments";
 import { prisma } from "@/lib/db";
@@ -10,6 +10,12 @@ const bodySchema = z.object({
   amountPaise: z.number().int().positive(),
   auditId: z.string().optional(),
 });
+
+function validateOrderBody(data: z.infer<typeof bodySchema>) {
+  const amountError = validateCoffeeAmountPaise(data.amountPaise);
+  if (amountError) return amountError;
+  return null;
+}
 
 export async function POST(request: Request) {
   if (!isRazorpayConfigured()) {
@@ -23,6 +29,11 @@ export async function POST(request: Request) {
     }
 
     const { amountPaise, auditId } = parsed.data;
+    const amountError = validateOrderBody(parsed.data);
+    if (amountError) {
+      return NextResponse.json({ error: amountError }, { status: 400 });
+    }
+
     const clientIp = resolveClientIp(request);
     const userAgent = request.headers.get("user-agent");
 
@@ -54,7 +65,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Create coffee order error:", error);
     const message = error instanceof Error ? error.message : "Failed to create order";
-    const status = message === "Invalid amount" || message === "Audit not found" ? 400 : 500;
+    const status = message === "Invalid amount" || message === "Audit not found" || message.includes("Minimum amount") || message.includes("Maximum amount") || message.includes("valid amount") ? 400 : 500;
     return NextResponse.json({ error: message }, { status });
   }
 }

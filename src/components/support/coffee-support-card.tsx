@@ -1,8 +1,10 @@
 "use client";
 
-import { Coffee, Heart, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Coffee } from "lucide-react";
+import { CoffeeAmountPicker } from "@/components/support/coffee-amount-picker";
 import { useCoffeeCheckout } from "@/components/support/use-coffee-checkout";
+import { coffeeSupportCopy } from "@/lib/payments/support-copy";
+import { cn } from "@/lib/utils";
 
 type CoffeeSupportCardProps = {
   auditId?: string;
@@ -17,7 +19,7 @@ export function CoffeeSupportCard({
   variant = "inline",
   className,
 }: CoffeeSupportCardProps) {
-  const { pay, loadingAmount, error, success, amounts, available } = useCoffeeCheckout(auditId);
+  const { pay, loadingAmount, error, success, available } = useCoffeeCheckout(auditId);
 
   if (!available) return null;
 
@@ -35,43 +37,32 @@ export function CoffeeSupportCard({
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
-            Keep it free for everyone
+            Built with care, kept free on purpose
           </p>
           <h3 className="mt-1 text-lg font-bold text-slate-900">
-            {success ? "Thank you for your support!" : "Buy us a coffee"}
+            {success ? coffeeSupportCopy.titleSuccess : coffeeSupportCopy.title}
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-slate-600">
             {success
-              ? "Your contribution helps cover API costs and keeps FlexiSeo Expert free."
+              ? coffeeSupportCopy.success
               : auditUrl
-                ? `This audit for ${auditUrl} uses real Lighthouse, CrUX, and AI calls. If it helped, a small tip keeps the tool free for others.`
-                : "FlexiSeo Expert is free — no signup, no limits. A coffee helps us cover API costs."}
+                ? coffeeSupportCopy.descriptionAudit(auditUrl)
+                : coffeeSupportCopy.description}
           </p>
 
           {!success && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {amounts.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() => pay(option.amountPaise)}
-                  disabled={loadingAmount !== null}
-                  className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-amber-300 hover:bg-amber-50 disabled:opacity-60"
-                >
-                  {loadingAmount === option.amountPaise ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Heart className="h-4 w-4 text-amber-600" />
-                  )}
-                  {option.label}
-                </button>
-              ))}
+            <div className="mt-4">
+              <CoffeeAmountPicker
+                onPay={pay}
+                loadingAmount={loadingAmount}
+                disabled={loadingAmount !== null}
+              />
             </div>
           )}
 
           {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
           {!success && (
-            <p className="mt-3 text-xs text-slate-500">Secure payment via Razorpay. Optional — always free to use.</p>
+            <p className="mt-3 text-xs text-slate-500">{coffeeSupportCopy.footerNote}</p>
           )}
         </div>
       </div>

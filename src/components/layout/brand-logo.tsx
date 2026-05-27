@@ -11,7 +11,7 @@ interface BrandLogoProps {
 
 export function BrandLogo({
   variant = "header",
-  showTagline = variant === "header",
+  showTagline = false,
   href = "/",
   className,
 }: BrandLogoProps) {
@@ -55,7 +55,7 @@ export function BrandLogo({
   if (href === false) return mark;
 
   return (
-    <Link href={href} className="inline-block w-fit" aria-label={`${siteConfig.name} home`}>
+    <Link href={href} className="inline-block w-fit cursor-pointer" aria-label={`${siteConfig.name} home`}>
       {mark}
     </Link>
   );

@@ -30,6 +30,22 @@ body {
   overflow-x: clip;
 }
 
+@layer base {
+  a[href],
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  label[for],
+  select:not(:disabled),
+  summary {
+    @apply cursor-pointer;
+  }
+
+  button:disabled,
+  [aria-disabled="true"] {
+    @apply cursor-not-allowed;
+  }
+}
+
 .gradient-text {
   background: linear-gradient(135deg, #0f172a 0%, #059669 45%, #10b981 100%);
   -webkit-background-clip: text;
