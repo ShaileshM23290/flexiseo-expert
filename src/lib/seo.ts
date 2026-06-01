@@ -58,9 +58,9 @@ export function pageMetadata({
       description,
       images: [
         {
-          url: seoDefaults.ogImage,
-          width: 1133,
-          height: 394,
+        url: seoDefaults.ogImage,
+        width: 512,
+        height: 512,
           alt: seoDefaults.ogImageAlt,
         },
       ],

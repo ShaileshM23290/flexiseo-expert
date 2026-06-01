@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 420" fill="none" role="img" aria-label="SEO category analysis">
   <defs>
     <linearGradient id="f-green" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="0%" stop-color="#a51c1c"/>
       <stop offset="100%" stop-color="#34d399"/>
     </linearGradient>
     <linearGradient id="f-bar" x1="0" y1="1" x2="0" y2="0">
-      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="0%" stop-color="#a51c1c"/>
       <stop offset="100%" stop-color="#6ee7b7"/>
     </linearGradient>
     <filter id="f-shadow" x="-5%" y="-5%" width="110%" height="115%">
@@ -16,7 +16,7 @@
     </filter>
   </defs>
 
-  <ellipse cx="280" cy="210" rx="250" ry="185" fill="#ecfdf5" opacity="0.45"/>
+  <ellipse cx="280" cy="210" rx="250" ry="185" fill="#fef2f2" opacity="0.45"/>
 
   <!-- main panel -->
   <g filter="url(#f-shadow)">
@@ -33,7 +33,7 @@
       <rect width="84" height="108" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
       <circle cx="42" cy="38" r="26" stroke="#e2e8f0" stroke-width="4" fill="none"/>
       <circle cx="42" cy="38" r="26" stroke="url(#f-green)" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="163" stroke-dashoffset="16" transform="rotate(-90 42 38)"/>
-      <text x="42" y="44" text-anchor="middle" fill="#059669" font-size="16" font-weight="700">A-</text>
+      <text x="42" y="44" text-anchor="middle" fill="#a51c1c" font-size="16" font-weight="700">A-</text>
       <text x="42" y="78" text-anchor="middle" fill="#64748b" font-size="8" font-weight="600">ON-PAGE</text>
       <text x="42" y="92" text-anchor="middle" fill="#94a3b8" font-size="9">92/100</text>
     </g>
@@ -42,7 +42,7 @@
       <rect width="84" height="108" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
       <circle cx="42" cy="38" r="26" stroke="#e2e8f0" stroke-width="4" fill="none"/>
       <circle cx="42" cy="38" r="26" stroke="url(#f-green)" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="163" stroke-dashoffset="20" transform="rotate(-90 42 38)"/>
-      <text x="42" y="44" text-anchor="middle" fill="#059669" font-size="16" font-weight="700">A-</text>
+      <text x="42" y="44" text-anchor="middle" fill="#a51c1c" font-size="16" font-weight="700">A-</text>
       <text x="42" y="78" text-anchor="middle" fill="#64748b" font-size="8" font-weight="600">LINKS</text>
       <text x="42" y="92" text-anchor="middle" fill="#94a3b8" font-size="9">88/100</text>
     </g>
@@ -60,7 +60,7 @@
       <rect width="84" height="108" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
       <circle cx="42" cy="38" r="26" stroke="#e2e8f0" stroke-width="4" fill="none"/>
       <circle cx="42" cy="38" r="26" stroke="url(#f-green)" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="163" stroke-dashoffset="8" transform="rotate(-90 42 38)"/>
-      <text x="42" y="44" text-anchor="middle" fill="#059669" font-size="16" font-weight="700">A</text>
+      <text x="42" y="44" text-anchor="middle" fill="#a51c1c" font-size="16" font-weight="700">A</text>
       <text x="42" y="78" text-anchor="middle" fill="#64748b" font-size="8" font-weight="600">PERFORMANCE</text>
       <text x="42" y="92" text-anchor="middle" fill="#94a3b8" font-size="9">94/100</text>
     </g>
@@ -69,7 +69,7 @@
       <rect width="84" height="108" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
       <circle cx="42" cy="38" r="26" stroke="#e2e8f0" stroke-width="4" fill="none"/>
       <circle cx="42" cy="38" r="26" stroke="url(#f-green)" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="163" stroke-dashoffset="0" transform="rotate(-90 42 38)"/>
-      <text x="42" y="44" text-anchor="middle" fill="#059669" font-size="16" font-weight="700">A+</text>
+      <text x="42" y="44" text-anchor="middle" fill="#a51c1c" font-size="16" font-weight="700">A+</text>
       <text x="42" y="78" text-anchor="middle" fill="#64748b" font-size="8" font-weight="600">SOCIAL</text>
       <text x="42" y="92" text-anchor="middle" fill="#94a3b8" font-size="9">98/100</text>
     </g>

@@ -1,11 +1,11 @@
 /** PDF hex palette aligned with Tailwind classes used on the audit report page */
 
 export const PDF_BRAND = {
-  primary: "#059669",
-  dark: "#047857",
-  light: "#ecfdf5",
-  muted: "#d1fae5",
-  soft: "#f0fdf4",
+  primary: "#a51c1c",
+  dark: "#7b1414",
+  light: "#fef2f2",
+  muted: "#fee2e2",
+  soft: "#fff5f5",
 };
 
 export const PDF_SLATE = {
@@ -58,25 +58,25 @@ export const PDF_PRIORITY = {
 } as const;
 
 export const PDF_ACTION_PLAN = {
-  quickWins: { title: "#047857", bg: "#ecfdf5", border: "#a7f3d0" },
+  quickWins: { title: "#7b1414", bg: "#fef2f2", border: "#fecaca" },
   technicalFixes: { title: "#0369a1", bg: "#f0f9ff", border: "#bae6fd" },
   contentImprovements: { title: "#b45309", bg: "#fffbeb", border: "#fde68d" },
   strategicImprovements: { title: "#6d28d9", bg: "#f5f3ff", border: "#ddd6fe" },
-  sevenDayPlan: { title: "#047857", bg: "#ecfdf5", border: "#a7f3d0" },
-  thirtyDayPlan: { title: "#047857", bg: "#ecfdf5", border: "#a7f3d0" },
+  sevenDayPlan: { title: "#7b1414", bg: "#fef2f2", border: "#fecaca" },
+  thirtyDayPlan: { title: "#7b1414", bg: "#fef2f2", border: "#fecaca" },
 } as const;
 
 export const PDF_TECH_ACCENT = {
   violet: { bg: "#f5f3ff", border: "#ddd6fe", header: "#6d28d9" },
   sky: { bg: "#f0f9ff", border: "#bae6fd", header: "#0284c7" },
   amber: { bg: "#fffbeb", border: "#fde68d", header: "#d97706" },
-  brand: { bg: "#ecfdf5", border: "#a7f3d0", header: "#059669" },
+  brand: { bg: "#fef2f2", border: "#fecaca", header: "#a51c1c" },
   rose: { bg: "#fff1f2", border: "#fecdd3", header: "#e11d48" },
   slate: { bg: "#f8fafc", border: "#e2e8f0", header: "#475569" },
 } as const;
 
 export function pdfGradePalette(grade: string) {
-  if (grade.startsWith("A")) return { bg: "#ecfdf5", border: "#a7f3d0", text: "#059669", bar: "#10b981" };
+  if (grade.startsWith("A")) return { bg: "#fef2f2", border: "#fecaca", text: "#a51c1c", bar: "#c53030" };
   if (grade.startsWith("B")) return { bg: "#f7fee7", border: "#d9f99d", text: "#65a30d", bar: "#84cc16" };
   if (grade.startsWith("C")) return { bg: "#fffbeb", border: "#fde68d", text: "#d97706", bar: "#f59e0b" };
   if (grade.startsWith("D")) return { bg: "#fff7ed", border: "#fdba74", text: "#ea580c", bar: "#f97316" };

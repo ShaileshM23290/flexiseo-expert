@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 420" fill="none" role="img" aria-label="AI SEO expert recommendations">
   <defs>
     <linearGradient id="a-green" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#047857"/>
-      <stop offset="100%" stop-color="#10b981"/>
+      <stop offset="0%" stop-color="#7b1414"/>
+      <stop offset="100%" stop-color="#c53030"/>
     </linearGradient>
     <linearGradient id="a-glow" x1="0.5" y1="0" x2="0.5" y2="1">
-      <stop offset="0%" stop-color="#ecfdf5"/>
+      <stop offset="0%" stop-color="#fef2f2"/>
       <stop offset="100%" stop-color="#ffffff"/>
     </linearGradient>
     <filter id="a-shadow" x="-6%" y="-6%" width="112%" height="118%">
@@ -16,7 +16,7 @@
     </filter>
   </defs>
 
-  <ellipse cx="280" cy="210" rx="250" ry="180" fill="#ecfdf5" opacity="0.5"/>
+  <ellipse cx="280" cy="210" rx="250" ry="180" fill="#fef2f2" opacity="0.5"/>
 
   <!-- main card -->
   <g filter="url(#a-shadow)">
@@ -47,17 +47,17 @@
 
   <!-- AI recommendation panel -->
   <g filter="url(#a-soft)" transform="translate(64,206)">
-    <rect width="432" height="156" rx="12" fill="url(#a-glow)" stroke="#a7f3d0" stroke-width="1.5"/>
-    <rect x="0" y="0" width="432" height="4" rx="12" fill="#059669" opacity="0.3"/>
+    <rect width="432" height="156" rx="12" fill="url(#a-glow)" stroke="#fecaca" stroke-width="1.5"/>
+    <rect x="0" y="0" width="432" height="4" rx="12" fill="#a51c1c" opacity="0.3"/>
 
-    <text x="16" y="26" fill="#059669" font-family="system-ui,sans-serif" font-size="9" font-weight="700" letter-spacing="0.06em">AI RECOMMENDATION</text>
+    <text x="16" y="26" fill="#a51c1c" font-family="system-ui,sans-serif" font-size="9" font-weight="700" letter-spacing="0.06em">AI RECOMMENDATION</text>
     <text x="16" y="48" fill="#0f172a" font-family="system-ui,sans-serif" font-size="13" font-weight="700">Add a focused meta description</text>
     <text x="16" y="68" fill="#475569" font-family="system-ui,sans-serif" font-size="10">Write 120–160 characters explaining the page topic and value</text>
     <text x="16" y="84" fill="#475569" font-family="system-ui,sans-serif" font-size="10">proposition. Include your primary keyword naturally.</text>
 
     <!-- badges -->
-    <rect x="16" y="100" width="72" height="22" rx="11" fill="#ecfdf5" stroke="#a7f3d0"/>
-    <text x="52" y="114" text-anchor="middle" fill="#047857" font-family="system-ui,sans-serif" font-size="9" font-weight="600">Priority: High</text>
+    <rect x="16" y="100" width="72" height="22" rx="11" fill="#fef2f2" stroke="#fecaca"/>
+    <text x="52" y="114" text-anchor="middle" fill="#7b1414" font-family="system-ui,sans-serif" font-size="9" font-weight="600">Priority: High</text>
     <rect x="96" y="100" width="68" height="22" rx="11" fill="#f1f5f9" stroke="#e2e8f0"/>
     <text x="130" y="114" text-anchor="middle" fill="#475569" font-family="system-ui,sans-serif" font-size="9" font-weight="600">Effort: Quick</text>
     <rect x="172" y="100" width="72" height="22" rx="11" fill="#f1f5f9" stroke="#e2e8f0"/>
@@ -65,12 +65,12 @@
 
     <!-- code snippet -->
     <rect x="16" y="130" width="400" height="14" rx="4" fill="#0f172a" opacity="0.06"/>
-    <text x="24" y="140" fill="#059669" font-family="ui-monospace,monospace" font-size="8">description: "Your optimized page description here."</text>
+    <text x="24" y="140" fill="#a51c1c" font-family="ui-monospace,monospace" font-size="8">description: "Your optimized page description here."</text>
   </g>
 
   <!-- floating sparkle badge -->
   <g transform="translate(468,52)">
-    <circle r="28" fill="#059669" filter="url(#a-soft)"/>
+    <circle r="28" fill="#a51c1c" filter="url(#a-soft)"/>
     <g stroke="#ffffff" stroke-width="2" stroke-linecap="round">
       <line x1="0" y1="-10" x2="0" y2="10"/>
       <line x1="-10" y1="0" x2="10" y2="0"/>

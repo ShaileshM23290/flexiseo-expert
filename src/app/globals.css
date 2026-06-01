@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #ecfdf5;
-  --color-brand-100: #d1fae5;
-  --color-brand-200: #a7f3d0;
-  --color-brand-300: #6ee7b7;
-  --color-brand-400: #34d399;
-  --color-brand-500: #10b981;
-  --color-brand-600: #059669;
-  --color-brand-700: #047857;
+  --color-brand-50: #fef2f2;
+  --color-brand-100: #fee2e2;
+  --color-brand-200: #fecaca;
+  --color-brand-300: #fca5a5;
+  --color-brand-400: #e57373;
+  --color-brand-500: #c53030;
+  --color-brand-600: #a51c1c;
+  --color-brand-700: #7b1414;
   --color-ink: #0f172a;
   --color-surface: #ffffff;
   --color-muted: #64748b;
@@ -47,7 +47,7 @@ body {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #0f172a 0%, #059669 45%, #10b981 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #a51c1c 45%, #c53030 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -71,8 +71,8 @@ body {
 
 .hero-glow {
   background:
-    radial-gradient(ellipse 70% 60% at 50% -10%, rgba(5, 150, 105, 0.12), transparent),
-    radial-gradient(ellipse 40% 30% at 90% 20%, rgba(16, 185, 129, 0.06), transparent);
+    radial-gradient(ellipse 70% 60% at 50% -10%, rgba(165, 28, 28, 0.12), transparent),
+    radial-gradient(ellipse 40% 30% at 90% 20%, rgba(197, 48, 48, 0.06), transparent);
 }
 
 .hero-grid {

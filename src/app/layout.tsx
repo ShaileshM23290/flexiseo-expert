@@ -32,8 +32,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: seoDefaults.ogImage,
-        width: 1133,
-        height: 394,
+        width: 512,
+        height: 512,
         alt: seoDefaults.ogImageAlt,
       },
     ],

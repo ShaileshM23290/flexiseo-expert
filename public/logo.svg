@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" role="img" aria-label="FlexiSeo Expert">
+  <defs>
+    <linearGradient id="flexiseo-bg" x1="72" y1="56" x2="440" y2="456" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C53030"/>
+      <stop offset="1" stop-color="#7B1414"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#flexiseo-bg)"/>
+  <rect x="28" y="28" width="456" height="456" rx="96" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="3"/>
+  <circle cx="214" cy="214" r="86" stroke="#FFFFFF" stroke-width="28"/>
+  <rect x="168" y="236" width="24" height="52" rx="7" fill="#FFFFFF" fill-opacity="0.78"/>
+  <rect x="200" y="214" width="24" height="74" rx="7" fill="#FFFFFF" fill-opacity="0.92"/>
+  <rect x="232" y="192" width="24" height="96" rx="7" fill="#FFFFFF"/>
+  <path d="M278 278L358 358" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round"/>
+</svg>

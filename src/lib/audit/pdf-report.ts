@@ -694,7 +694,7 @@ class PdfLayout {
       this.drawColoredPanel(
         "TOP STRENGTHS",
         summary.topStrengths.map((s) => `• ${s}`),
-        { bg: "#ecfdf5", border: "#a7f3d0", title: "#047857" }
+        { bg: "#fef2f2", border: "#fecaca", title: "#7b1414" }
       );
     }
 
@@ -1097,7 +1097,7 @@ class PdfLayout {
       this.drawTextAt(String(page.statusCode), MARGIN + 280, rowBottom + 11, { size: 8, color: COLORS.slate700 });
       this.drawTextAt(String(page.wordCount), MARGIN + 340, rowBottom + 11, { size: 8, color: COLORS.slate700 });
 
-      const issueColor = page.issueCount > 5 ? "#be123c" : page.issueCount > 0 ? "#b45309" : "#047857";
+      const issueColor = page.issueCount > 5 ? "#be123c" : page.issueCount > 0 ? "#b45309" : "#7b1414";
       this.drawTextAt(String(page.issueCount), MARGIN + 400, rowBottom + 11, {
         size: 8,
         font: this.bold,

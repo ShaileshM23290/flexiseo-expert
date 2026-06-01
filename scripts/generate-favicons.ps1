@@ -2,7 +2,7 @@ Add-Type -AssemblyName System.Drawing
 
 $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $source = Join-Path $root "public\favicon-source.png"
-$brand = [System.Drawing.Color]::FromArgb(255, 5, 150, 105)
+$brand = [System.Drawing.Color]::FromArgb(255, 165, 28, 28)
 
 function Import-BitmapWithAlpha {
     param([string]$Path)
