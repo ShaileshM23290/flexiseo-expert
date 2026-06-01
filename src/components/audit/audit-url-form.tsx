@@ -83,12 +83,16 @@ export function AuditUrlForm({
   const isHero = variant === "hero";
 
   return (
-    <form onSubmit={handleSubmit} className={cn("w-full", className)}>
-      {variant === "default" && (
-        <label htmlFor={inputId} className="block text-sm font-medium text-slate-700">
-          Website URL
-        </label>
-      )}
+    <form onSubmit={handleSubmit} className={cn("w-full", className)} aria-label="Website SEO audit">
+      <label
+        htmlFor={inputId}
+        className={cn(
+          "block text-sm font-medium text-slate-700",
+          isHero && "sr-only"
+        )}
+      >
+        Website URL
+      </label>
 
       <div
         className={cn(
@@ -138,7 +142,7 @@ export function AuditUrlForm({
       {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
 
       {isHero && !error && (
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="mt-3 text-xs text-slate-600">
           Free instant audit · No signup · Results in under 2 minutes
         </p>
       )}

@@ -12,6 +12,7 @@
     "db:studio": "prisma studio",
     "db:seed-admin": "npx tsx scripts/seed-admin.ts",
     "favicons": "powershell -ExecutionPolicy Bypass -File scripts/generate-logo-assets.ps1",
+    "og-image": "powershell -ExecutionPolicy Bypass -File scripts/generate-og-image.ps1",
     "postinstall": "prisma generate"
   },
   "dependencies": {

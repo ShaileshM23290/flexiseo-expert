@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { siteConfig } from "@/lib/config";
-import { pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/json-ld";
+import { pageMetadata, webPageJsonLd } from "@/lib/seo";
+
+const privacyTitle = "Privacy Policy";
+const privacyDescription =
+  "FlexiSeo Expert privacy policy: we do not sell your data. Audit URLs and generated reports are used only to analyze websites you submit.";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Privacy Policy",
-  description:
-    `${siteConfig.name} privacy policy — we do not sell your data. Audit data is used only to analyze websites you submit.`,
+  title: privacyTitle,
+  description: privacyDescription,
   path: "/privacy",
 });
 
@@ -91,6 +95,14 @@ const sections = [
 
 export default function PrivacyPage() {
   return (
+    <>
+      <JsonLd
+        data={webPageJsonLd({
+          path: "/privacy",
+          title: privacyTitle,
+          description: privacyDescription,
+        })}
+      />
     <div className="px-4 py-16 sm:px-6 sm:py-20">
       <div className="mx-auto max-w-3xl">
         <p className="text-sm font-semibold uppercase tracking-widest text-brand-600">
@@ -142,5 +154,6 @@ export default function PrivacyPage() {
         </p>
       </div>
     </div>
+    </>
   );
 }

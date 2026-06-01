@@ -2,12 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Building2, Target, Users } from "lucide-react";
 import { siteConfig } from "@/lib/config";
-import { pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/json-ld";
+import { pageMetadata, webPageJsonLd } from "@/lib/seo";
+
+const aboutTitle = "About FlexiSeo Expert";
+const aboutDescription =
+  "FlexiSeo Expert is a free AI SEO audit tool by Flexodyn Solutions — built for founders, marketers, and developers who need actionable technical SEO insights.";
 
 export const metadata: Metadata = pageMetadata({
-  title: "About",
-  description:
-    `Learn about ${siteConfig.name} — a free AI-powered SEO audit tool powered by Flexodyn Solutions Private Limited for founders, marketers, and developers.`,
+  title: aboutTitle,
+  description: aboutDescription,
   path: "/about",
 });
 
@@ -34,6 +38,14 @@ const values = [
 
 export default function AboutPage() {
   return (
+    <>
+      <JsonLd
+        data={webPageJsonLd({
+          path: "/about",
+          title: aboutTitle,
+          description: aboutDescription,
+        })}
+      />
     <div className="px-4 py-16 sm:px-6 sm:py-20">
       <div className="mx-auto max-w-4xl">
         <div className="text-center">
@@ -109,5 +121,6 @@ export default function AboutPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

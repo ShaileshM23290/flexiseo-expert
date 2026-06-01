@@ -12,13 +12,19 @@ import {
   Zap,
 } from "lucide-react";
 import { AuditUrlForm } from "@/components/audit/audit-url-form";
-import { pageMetadata, seoDefaults } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/json-ld";
+import { pageMetadata, webPageJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/lib/config";
 
+const homeTitle = "Free AI SEO Audit Tool for Any Website";
+const homeDescription =
+  "Analyze any website with a free AI SEO audit — Lighthouse scores, Core Web Vitals, security headers, DNS checks, and prioritized fix recommendations. No signup required.";
+
 export const metadata: Metadata = pageMetadata({
-  title: seoDefaults.title,
-  description: seoDefaults.description,
+  title: homeTitle,
+  description: homeDescription,
   path: "/",
+  absoluteTitle: true,
 });
 
 const features = [
@@ -79,6 +85,13 @@ const steps = [
 export default function HomePage() {
   return (
     <>
+      <JsonLd
+        data={webPageJsonLd({
+          path: "/",
+          title: homeTitle,
+          description: homeDescription,
+        })}
+      />
       <section className="hero-glow hero-grid relative overflow-hidden px-4 pb-24 pt-16 sm:px-6 sm:pt-28">
         <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-2">
           <div className="animate-fade-up">
@@ -129,7 +142,7 @@ export default function HomePage() {
 
       <section className="border-y border-slate-200 bg-white px-4 py-10 sm:px-6">
         <div className="mx-auto max-w-6xl">
-          <p className="text-center text-xs font-semibold uppercase tracking-widest text-slate-400">
+          <p className="text-center text-xs font-semibold uppercase tracking-widest text-slate-500">
             Trusted data sources
           </p>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
@@ -222,7 +235,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="hidden bg-gradient-to-br from-brand-600 to-brand-700 p-8 text-white lg:flex lg:flex-col lg:justify-center lg:p-10">
-                <p className="text-sm font-medium uppercase tracking-widest text-brand-200">
+                <p className="text-sm font-medium uppercase tracking-widest text-white/80">
                   What you get
                 </p>
                 <ul className="mt-4 space-y-3">
@@ -232,8 +245,8 @@ export default function HomePage() {
                     "Security & DNS configuration report",
                     "AI executive summary & action plan",
                   ].map((item) => (
-                    <li key={item} className="flex items-center gap-2 text-sm text-brand-50">
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-brand-200" />
+                    <li key={item} className="flex items-center gap-2 text-sm text-white">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-white/80" />
                       {item}
                     </li>
                   ))}

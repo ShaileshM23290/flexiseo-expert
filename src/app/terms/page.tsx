@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { siteConfig } from "@/lib/config";
-import { pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/json-ld";
+import { pageMetadata, webPageJsonLd } from "@/lib/seo";
+
+const termsTitle = "Terms of Service";
+const termsDescription =
+  "Terms for using FlexiSeo Expert — free SEO audits operated by Flexodyn Solutions Private Limited. Read usage rules and limitations.";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Terms of Service",
-  description:
-    `Terms for using ${siteConfig.name} — free SEO audits. We do not sell or misuse your data.`,
+  title: termsTitle,
+  description: termsDescription,
   path: "/terms",
 });
 
@@ -86,6 +90,14 @@ const sections = [
 
 export default function TermsPage() {
   return (
+    <>
+      <JsonLd
+        data={webPageJsonLd({
+          path: "/terms",
+          title: termsTitle,
+          description: termsDescription,
+        })}
+      />
     <div className="px-4 py-16 sm:px-6 sm:py-20">
       <div className="mx-auto max-w-3xl">
         <p className="text-sm font-semibold uppercase tracking-widest text-brand-600">
@@ -141,5 +153,6 @@ export default function TermsPage() {
         </p>
       </div>
     </div>
+    </>
   );
 }

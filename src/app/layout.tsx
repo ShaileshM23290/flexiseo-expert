@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { AppShell } from "@/components/layout/app-shell";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -12,6 +12,12 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#a51c1c",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(seoDefaults.siteUrl),
   title: {
@@ -20,8 +26,11 @@ export const metadata: Metadata = {
   },
   description: seoDefaults.description,
   keywords: seoDefaults.keywords,
-  authors: [{ name: "Flexodyn Solutions Private Limited", url: "https://www.flexodynsolutions.com" }],
-  creator: "Flexodyn Solutions Private Limited",
+  applicationName: siteConfig.name,
+  authors: [{ name: siteConfig.company.name, url: siteConfig.company.url }],
+  creator: siteConfig.company.name,
+  publisher: siteConfig.company.name,
+  category: "technology",
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
@@ -32,17 +41,22 @@ export const metadata: Metadata = {
     images: [
       {
         url: seoDefaults.ogImage,
-        width: 512,
-        height: 512,
+        width: seoDefaults.ogImageWidth,
+        height: seoDefaults.ogImageHeight,
         alt: seoDefaults.ogImageAlt,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
+    site: seoDefaults.twitterHandle,
+    creator: seoDefaults.twitterHandle,
     title: seoDefaults.title,
     description: seoDefaults.description,
     images: [seoDefaults.ogImage],
+  },
+  alternates: {
+    canonical: seoDefaults.siteUrl,
   },
 };
 

@@ -126,7 +126,15 @@ export function Footer() {
 
         <div className="mt-6 flex flex-col gap-1 border-t border-slate-800 pt-4 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.</p>
-          <p>
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <Link href="/llms.txt" className="cursor-pointer text-slate-400 hover:text-brand-300">
+              llms.txt
+            </Link>
+            <span aria-hidden>·</span>
+            <Link href="/ai.txt" className="cursor-pointer text-slate-400 hover:text-brand-300">
+              ai.txt
+            </Link>
+            <span aria-hidden>·</span>
             Powered by{" "}
             <a
               href={siteConfig.company.url}

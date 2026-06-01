@@ -2,12 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Cpu, Sparkles, ScanSearch, FileBarChart } from "lucide-react";
 import { auditLoadingSteps, siteConfig } from "@/lib/config";
-import { pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/json-ld";
+import { pageMetadata, webPageJsonLd } from "@/lib/seo";
+
+const howTitle = "How the SEO Audit Works";
+const howDescription =
+  "See how FlexiSeo Expert crawls your site, runs 50+ SEO checks, scores five categories, and generates AI-powered recommendations in under two minutes.";
 
 export const metadata: Metadata = pageMetadata({
-  title: "How It Works",
-  description:
-    `Learn how ${siteConfig.name} analyzes your website with Google Lighthouse, CrUX field data, security scans, and AI SEO recommendations.`,
+  title: howTitle,
+  description: howDescription,
   path: "/how-it-works",
 });
 
@@ -44,6 +48,14 @@ const steps = [
 
 export default function HowItWorksPage() {
   return (
+    <>
+      <JsonLd
+        data={webPageJsonLd({
+          path: "/how-it-works",
+          title: howTitle,
+          description: howDescription,
+        })}
+      />
     <div className="px-4 py-16 sm:px-6 sm:py-20">
       <div className="mx-auto max-w-4xl">
         <div className="text-center">
@@ -103,5 +115,6 @@ export default function HowItWorksPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

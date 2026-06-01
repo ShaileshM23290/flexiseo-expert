@@ -14,13 +14,17 @@ import {
   Sparkles,
 } from "lucide-react";
 import { categoryLabels, categories } from "@/lib/config";
-import { pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/json-ld";
+import { pageMetadata, webPageJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/lib/config";
 
+const featuresTitle = "SEO Audit Features & Data Sources";
+const featuresDescription =
+  "Explore FlexiSeo Expert features: multi-page crawling, Google Lighthouse and CrUX, Open PageRank link authority, Mozilla security grading, W3C validation, and AI fix recommendations.";
+
 export const metadata: Metadata = pageMetadata({
-  title: "Features",
-  description:
-    `Discover ${siteConfig.name}'s AI-powered SEO audit capabilities with Google CrUX, Lighthouse, Mozilla security scans, and W3C validation.`,
+  title: featuresTitle,
+  description: featuresDescription,
   path: "/features",
 });
 
@@ -115,6 +119,14 @@ const categoryChecks: Record<(typeof categories)[number], string[]> = {
 
 export default function FeaturesPage() {
   return (
+    <>
+      <JsonLd
+        data={webPageJsonLd({
+          path: "/features",
+          title: featuresTitle,
+          description: featuresDescription,
+        })}
+      />
     <div className="px-4 py-16 sm:px-6 sm:py-20">
       <div className="mx-auto max-w-6xl">
         <div className="max-w-3xl">
@@ -195,5 +207,6 @@ export default function FeaturesPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
