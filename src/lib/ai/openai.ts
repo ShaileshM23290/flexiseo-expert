@@ -1,8 +1,13 @@
 import OpenAI from "openai";
 import { z } from "zod";
-import { aiLimits, isOpenAIRetryEnabled } from "./config";
+import { aiLimits, getOpenAIModel, isOpenAIRetryEnabled, isReasoningModel } from "./config";
+import { parseModelJson } from "./parse-json";
 
-const DEFAULT_MODEL = "gpt-4o-mini";
+export type StructuredResponseResult<T> = {
+  data: T;
+  /** False when the API failed, JSON was invalid/truncated, or validation failed without normalize. */
+  ok: boolean;
+};
 
 let client: OpenAI | null = null;
 
@@ -32,6 +37,7 @@ export async function generateStructuredResponse<T>({
   userPrompt,
   fallback,
   normalize,
+  maxTokens,
 }: {
   schema: z.ZodType<T>;
   schemaName: string;
@@ -39,20 +45,55 @@ export async function generateStructuredResponse<T>({
   userPrompt: string;
   fallback: T;
   normalize?: (raw: unknown, fallback: T) => T;
+  /** Override default max output tokens (e.g. large batch payloads). */
+  maxTokens?: number;
 }): Promise<T> {
+  const { data } = await generateStructuredResponseResult({
+    schema,
+    schemaName,
+    systemPrompt,
+    userPrompt,
+    fallback,
+    normalize,
+    maxTokens,
+  });
+  return data;
+}
+
+export async function generateStructuredResponseResult<T>({
+  schema,
+  schemaName,
+  systemPrompt,
+  userPrompt,
+  fallback,
+  normalize,
+  maxTokens,
+}: {
+  schema: z.ZodType<T>;
+  schemaName: string;
+  systemPrompt: string;
+  userPrompt: string;
+  fallback: T;
+  normalize?: (raw: unknown, fallback: T) => T;
+  maxTokens?: number;
+}): Promise<StructuredResponseResult<T>> {
   const openai = getOpenAIClient();
-  if (!openai) return fallback;
+  if (!openai) return { data: fallback, ok: false };
+
+  const outputTokenLimit = maxTokens ?? aiLimits.maxTokens;
+  const model = getOpenAIModel();
 
   const attempt = async (): Promise<T | null> => {
     try {
       const response = await openai.chat.completions.create({
-        model: DEFAULT_MODEL,
+        model,
+        ...(isReasoningModel(model) ? { reasoning_effort: "none" as const } : {}),
         temperature: 0.2,
-        max_tokens: aiLimits.maxTokens,
+        max_completion_tokens: outputTokenLimit,
         messages: [
           {
             role: "system",
-            content: `${systemPrompt}\n\nAlways respond with valid JSON only. Be concise.`,
+            content: `${systemPrompt}\n\nAlways respond with valid JSON only. Be concise — short sentences, no markdown.`,
           },
           {
             role: "user",
@@ -62,10 +103,27 @@ export async function generateStructuredResponse<T>({
         response_format: { type: "json_object" },
       });
 
-      const content = response.choices[0]?.message?.content;
+      const choice = response.choices[0];
+      const content = choice?.message?.content;
       if (!content) return null;
 
-      const raw = JSON.parse(content) as unknown;
+      if (choice?.finish_reason === "length") {
+        console.warn(
+          `[AI] Output truncated (${schemaName}) — max_tokens=${outputTokenLimit}; retry or split the request`
+        );
+      }
+
+      let raw: unknown;
+      try {
+        raw = parseModelJson(content);
+      } catch (error) {
+        console.warn(
+          `[AI] Invalid JSON (${schemaName}):`,
+          error instanceof Error ? error.message : error
+        );
+        return null;
+      }
+
       const candidate = normalize ? normalize(raw, fallback) : raw;
       const parsed = schema.safeParse(candidate);
 
@@ -85,10 +143,12 @@ export async function generateStructuredResponse<T>({
   };
 
   const first = await attempt();
-  if (first) return first;
+  if (first) return { data: first, ok: true };
 
-  if (!isOpenAIRetryEnabled()) return fallback;
+  if (!isOpenAIRetryEnabled()) return { data: fallback, ok: false };
 
   const retry = await attempt();
-  return retry ?? fallback;
+  if (retry) return { data: retry, ok: true };
+
+  return { data: fallback, ok: false };
 }

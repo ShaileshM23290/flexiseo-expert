@@ -14,6 +14,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { categoryLabels, categories } from "@/lib/config";
+import { CtaBand } from "@/components/marketing/cta-band";
+import { PageHero, SectionHeading } from "@/components/marketing/page-hero";
 import { JsonLd } from "@/components/seo/json-ld";
 import { pageMetadata, webPageJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/lib/config";
@@ -127,29 +129,34 @@ export default function FeaturesPage() {
           description: featuresDescription,
         })}
       />
-    <div className="px-4 py-16 sm:px-6 sm:py-20">
-      <div className="mx-auto max-w-6xl">
-        <div className="max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-widest text-brand-600">
-            Features
-          </p>
-          <h1 className="mt-3 text-4xl font-bold text-slate-900 sm:text-5xl">
-            Everything a professional SEO audit needs — for free
-          </h1>
-          <p className="mt-4 text-lg leading-relaxed text-slate-600">
-            {siteConfig.name} combines deterministic crawling with Google&apos;s own APIs,
-            Mozilla security scanning, DNS validation, and AI expert guidance — delivering
-            reports that rival paid audit platforms.
-          </p>
+      <PageHero
+        eyebrow="Features"
+        title={
+          <>
+            Everything a professional SEO audit needs — <span className="mk-accent">for free</span>
+          </>
+        }
+        description={`${siteConfig.name} combines deep crawling with Google's own APIs, Mozilla security scanning, DNS validation, and AI expert guidance — reports that rival paid audit platforms.`}
+      >
+        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link href="/audit" className="mk-btn-primary">
+            Audit my site free <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link href="/how-it-works" className="mk-btn-secondary">
+            How it works
+          </Link>
         </div>
+      </PageHero>
 
-        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="px-4 py-20 sm:px-6">
+      <div className="mx-auto max-w-6xl">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {featureList.map((feature) => (
-            <div key={feature.title} className="glass-card card-hover rounded-xl p-6">
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50">
-                <feature.icon className="h-5 w-5 text-brand-600" />
+            <div key={feature.title} className="mk-card mk-card-hover p-6">
+              <div className="mk-icon-tile">
+                <feature.icon className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-semibold text-slate-900">{feature.title}</h3>
+              <h3 className="mt-5 font-heading text-base font-bold text-slate-900">{feature.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-600">
                 {feature.description}
               </p>
@@ -157,18 +164,16 @@ export default function FeaturesPage() {
           ))}
         </div>
 
-        <div className="mt-24">
-          <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
-            What we check in each category
-          </h2>
-          <p className="mt-3 max-w-2xl text-slate-600">
-            Five SEOptimer-aligned pillars — now enriched with Google CrUX field data,
-            Mozilla Observatory, Safe Browsing, and W3C validation.
-          </p>
+        <div className="mt-28">
+          <SectionHeading
+            eyebrow="Coverage"
+            title="What we check in each category"
+            description="Five pillars enriched with Google CrUX field data, Mozilla Observatory, Safe Browsing, and W3C validation."
+          />
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {categories.map((cat) => (
-              <div key={cat} className="glass-card rounded-xl p-6">
-                <h3 className="font-semibold text-slate-900">{categoryLabels[cat]}</h3>
+              <div key={cat} className="mk-card p-6">
+                <h3 className="font-heading text-lg font-bold text-slate-900">{categoryLabels[cat]}</h3>
                 <ul className="mt-4 space-y-2">
                   {categoryChecks[cat].map((check) => (
                     <li key={check} className="flex items-start gap-2 text-sm text-slate-600">
@@ -188,25 +193,26 @@ export default function FeaturesPage() {
             alt="SEO analysis features"
             width={560}
             height={420}
-            className="w-full rounded-2xl shadow-lg ring-1 ring-slate-200/60"
+            className="w-full rounded-3xl shadow-2xl ring-1 ring-slate-200/70"
           />
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">Built for teams and founders</h2>
+            <span className="mk-eyebrow">For everyone</span>
+            <h2 className="mt-4 font-heading text-3xl font-extrabold tracking-tight text-slate-900">
+              Built for teams and founders
+            </h2>
             <p className="mt-4 leading-relaxed text-slate-600">
               Developers get technical fix notes and code examples. Marketers get prioritized
               action plans. Business owners get plain-English impact summaries. Everyone gets
               the same professional-grade report.
             </p>
-            <Link
-              href="/audit"
-              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-700"
-            >
+            <Link href="/audit" className="mk-btn-primary mt-8">
               Try It Free <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
       </div>
     </div>
+      <CtaBand />
     </>
   );
 }

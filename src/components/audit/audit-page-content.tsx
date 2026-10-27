@@ -10,6 +10,7 @@ import {
   Smartphone,
 } from "lucide-react";
 import { AuditUrlForm } from "@/components/audit/audit-url-form";
+import { CtaBand } from "@/components/marketing/cta-band";
 import { categoryDescriptions, categoryLabels, categories, siteConfig } from "@/lib/config";
 
 const categoryIcons = {
@@ -36,11 +37,11 @@ const trustPoints = [
 ];
 
 const sampleGrades = [
-  { cat: "On-Page", grade: "B+", color: "text-sky-600 bg-sky-50 border-sky-200" },
-  { cat: "Links", grade: "A-", color: "text-emerald-600 bg-emerald-50 border-emerald-200" },
-  { cat: "Usability", grade: "B", color: "text-sky-600 bg-sky-50 border-sky-200" },
-  { cat: "Performance", grade: "C+", color: "text-amber-600 bg-amber-50 border-amber-200" },
-  { cat: "Social", grade: "A", color: "text-emerald-600 bg-emerald-50 border-emerald-200" },
+  { cat: "On-Page", grade: "B+", color: "text-sky-700 bg-sky-50 border-sky-200" },
+  { cat: "Links", grade: "A-", color: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+  { cat: "Usability", grade: "B", color: "text-sky-700 bg-sky-50 border-sky-200" },
+  { cat: "Performance", grade: "C+", color: "text-amber-700 bg-amber-50 border-amber-200" },
+  { cat: "Social", grade: "A", color: "text-emerald-700 bg-emerald-50 border-emerald-200" },
 ];
 
 export const auditFaqs = [
@@ -70,33 +71,34 @@ export function AuditPageContent() {
   return (
     <>
       {/* Hero + form */}
-      <section className="hero-glow hero-grid border-b border-slate-200 px-4 py-12 sm:px-6 sm:py-16">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2 lg:gap-14">
+      <section className="mk-hero overflow-hidden px-4 pb-16 pt-14 sm:px-6 sm:pb-20 sm:pt-20">
+        <div className="mk-grid-light absolute inset-0 -z-10" aria-hidden />
+        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
           <div>
-            <div className="mb-4 flex flex-wrap gap-2">
-              <span className="stat-pill">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-                100% free
+            <div className="mb-5 flex flex-wrap gap-2">
+              <span className="mk-badge">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                Free
               </span>
-              <span className="stat-pill">No signup</span>
-              <span className="stat-pill">~2 min results</span>
+              <span className="mk-badge">No signup</span>
+              <span className="mk-badge">Results in ~2 minutes</span>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-[2.75rem] lg:leading-tight">
-              Free website SEO audit — instant report
+            <h1 className="font-heading text-4xl font-bold leading-[1.12] tracking-tight text-slate-900 sm:text-5xl">
+              Free website SEO audit
             </h1>
-            <p className="mt-4 text-lg leading-relaxed text-slate-600">
-              Analyze any website for on-page SEO, Core Web Vitals, security, and technical
-              issues. Powered by Google Lighthouse, CrUX, and AI expert recommendations.
+            <p className="mt-5 text-lg leading-relaxed text-slate-600">
+              Analyze any website for on-page SEO, Core Web Vitals, security and technical
+              issues — powered by Google Lighthouse, CrUX and AI expert recommendations.
             </p>
 
-            <div className="mt-8 glass-card rounded-xl p-5 sm:p-6">
+            <div className="mt-8">
               <AuditUrlForm variant="hero" inputId="audit-page-url" />
             </div>
 
-            <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+            <ul className="mt-7 grid gap-2.5 sm:grid-cols-2">
               {trustPoints.slice(0, 4).map((item) => (
                 <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
                   {item}
                 </li>
               ))}
@@ -104,38 +106,33 @@ export function AuditPageContent() {
           </div>
 
           {/* Sample report preview */}
-          <div className="glass-card mx-auto w-full max-w-md overflow-hidden rounded-2xl">
-            <div className="border-b border-slate-100 bg-slate-50 px-5 py-3">
+          <div className="mk-panel mx-auto w-full max-w-md overflow-hidden">
+            <div className="border-b border-slate-100 bg-slate-50/70 px-5 py-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Sample report preview
               </p>
             </div>
             <div className="p-5 sm:p-6">
               <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-emerald-200 bg-emerald-50 text-2xl font-bold text-emerald-700">
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 font-heading text-2xl font-bold text-emerald-700">
                   B+
                 </div>
                 <div>
-                  <p className="font-semibold text-slate-900">Overall SEO grade</p>
+                  <p className="font-heading font-semibold text-slate-900">Overall SEO grade</p>
                   <p className="text-sm text-slate-500">example.com · 12 pages crawled</p>
                 </div>
               </div>
               <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {sampleGrades.map((g) => (
-                  <div
-                    key={g.cat}
-                    className={`rounded-lg border px-3 py-2 text-center ${g.color}`}
-                  >
-                    <p className="text-[10px] font-medium uppercase tracking-wide opacity-80">
-                      {g.cat}
-                    </p>
-                    <p className="text-lg font-bold">{g.grade}</p>
+                  <div key={g.cat} className={`rounded-lg border px-3 py-2 text-center ${g.color}`}>
+                    <p className="text-[10px] font-medium uppercase tracking-wide opacity-80">{g.cat}</p>
+                    <p className="font-heading text-lg font-bold">{g.grade}</p>
                   </div>
                 ))}
               </div>
-              <div className="mt-5 flex items-center gap-2 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-800">
+              <div className="mt-5 flex items-center gap-2 rounded-lg border border-brand-100 bg-brand-50/60 px-3 py-2.5 text-sm text-brand-700">
                 <Shield className="h-4 w-4 shrink-0" />
-                + AI fix recommendations for every issue
+                AI fix recommendations for every issue
               </div>
             </div>
           </div>
@@ -156,11 +153,11 @@ export function AuditPageContent() {
             {categories.map((cat) => {
               const Icon = categoryIcons[cat];
               return (
-                <article key={cat} className="glass-card rounded-xl p-5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50">
-                    <Icon className="h-4 w-4 text-brand-600" />
+                <article key={cat} className="mk-card mk-card-hover p-6">
+                  <div className="mk-icon-tile">
+                    <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="mt-3 font-semibold text-slate-900">{categoryLabels[cat]}</h3>
+                  <h3 className="mt-4 font-heading text-lg font-bold text-slate-900">{categoryLabels[cat]}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
                     {categoryDescriptions[cat]}
                   </p>
@@ -203,7 +200,7 @@ export function AuditPageContent() {
           </h2>
           <dl className="mt-6 space-y-4">
             {auditFaqs.map((faq) => (
-              <div key={faq.question} className="glass-card rounded-xl p-5">
+              <div key={faq.question} className="mk-card p-6">
                 <dt className="font-semibold text-slate-900">{faq.question}</dt>
                 <dd className="mt-2 text-sm leading-relaxed text-slate-600">{faq.answer}</dd>
               </div>
@@ -213,24 +210,12 @@ export function AuditPageContent() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="border-t border-slate-200 bg-white px-4 py-14 sm:px-6">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 text-center lg:flex-row lg:justify-between lg:text-left">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
-              Ready to audit your website?
-            </h2>
-            <p className="mt-2 text-slate-600">
-              Join thousands of founders and marketers improving their SEO for free.
-            </p>
-          </div>
-          <Link
-            href="#audit-page-url"
-            className="shrink-0 rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-700"
-          >
-            Start free audit
-          </Link>
-        </div>
-      </section>
+      <CtaBand
+        title="Ready to see where your site stands?"
+        description="Join founders and marketers who use their free report to fix what's actually holding their rankings back."
+        href="#audit-page-url"
+        label="Start free audit"
+      />
     </>
   );
 }

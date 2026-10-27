@@ -1,5 +1,18 @@
 /** OpenAI usage controls — tune via .env to manage cost. */
 
+const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
+
+/** Chat model for structured audit recommendations (override with OPENAI_MODEL). */
+export function getOpenAIModel(): string {
+  const raw = process.env.OPENAI_MODEL?.trim();
+  return raw || DEFAULT_OPENAI_MODEL;
+}
+
+/** GPT-5+ and o-series reasoning models reject `temperature` unless reasoning is off. */
+export function isReasoningModel(model: string): boolean {
+  return /^(o\d|gpt-(5|6|7|8|9))/i.test(model);
+}
+
 /** When false, skips the single AI pass that runs after each audit completes. */
 export function isOpenAIAutoGenerateEnabled(): boolean {
   return process.env.OPENAI_AUTO_GENERATE !== "false";
@@ -30,6 +43,14 @@ export const aiLimits = {
   /** Max output tokens per completion */
   maxTokens: envInt("OPENAI_MAX_TOKENS", 1200, 4096),
 };
+
+/** Batch issue JSON is large — scale output cap so responses are not truncated mid-string. */
+export function maxTokensForBatchIssues(issueCount: number): number {
+  const perIssue = 520;
+  const floor = aiLimits.maxTokens;
+  const scaled = 150 + Math.max(1, issueCount) * perIssue;
+  return Math.min(4096, Math.max(floor, scaled));
+}
 
 export const maxIssuesForAI = aiLimits.maxIssues;
 export const maxPagesForAISummary = aiLimits.maxPages;

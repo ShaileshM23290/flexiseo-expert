@@ -1,5 +1,5 @@
-import { generateStructuredResponse, isOpenAIAvailable } from "./openai";
-import { aiLimits } from "./config";
+import { generateStructuredResponse, generateStructuredResponseResult, isOpenAIAvailable } from "./openai";
+import { aiLimits, maxTokensForBatchIssues } from "./config";
 import {
   SYSTEM_PROMPT,
   actionPlanPrompt,
@@ -308,19 +308,39 @@ export async function generateBatchIssueRecommendations(
     wordCount: pageData?.wordCount,
   }));
 
-  const result = await generateStructuredResponse({
+  const batchPayload = {
     schema: batchIssueRecommendationsSchema,
-    schemaName: "batch_issue_recommendations",
+    schemaName: "batch_issue_recommendations" as const,
     systemPrompt: SYSTEM_PROMPT,
     userPrompt: `${batchIssueRecommendationPrompt(domain, batchInput)}
 
 Return exactly ${issues.length} recommendations in order:
 ${BATCH_ISSUE_RECOMMENDATIONS_JSON_TEMPLATE}`,
     fallback: { recommendations: fallbacks },
-    normalize: (raw) => ({
+    normalize: (raw: unknown) => ({
       recommendations: normalizeBatchIssueRecommendations(raw, fallbacks),
     }),
-  });
+    maxTokens: maxTokensForBatchIssues(issues.length),
+  };
 
-  return result.recommendations;
+  const result = await generateStructuredResponseResult(batchPayload);
+  if (result.ok) return result.data.recommendations;
+
+  if (issues.length <= 1) {
+    return [
+      await generateIssueRecommendation(issues[0].issue, issues[0].pageData, { domain }),
+    ];
+  }
+
+  const mid = Math.ceil(issues.length / 2);
+  console.warn(
+    `[AI] batch_issue_recommendations failed for ${issues.length} issues — retrying as ${mid} + ${issues.length - mid}`
+  );
+
+  const [left, right] = await Promise.all([
+    generateBatchIssueRecommendations(domain, issues.slice(0, mid)),
+    generateBatchIssueRecommendations(domain, issues.slice(mid)),
+  ]);
+
+  return [...left, ...right];
 }

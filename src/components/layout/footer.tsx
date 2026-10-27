@@ -45,7 +45,7 @@ function FooterColumn({
 export function Footer() {
   return (
     <footer className="border-t border-slate-800 bg-slate-950 text-slate-300">
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4 sm:gap-x-8">
           {/* Col 1 — brand */}
           <div className="col-span-2 sm:col-span-1">
@@ -94,7 +94,7 @@ export function Footer() {
             <div className="mt-3 flex w-full flex-col gap-3">
               <Link
                 href="/audit"
-                className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-500"
+                className="mk-btn-primary w-full px-4 py-2.5 text-sm"
               >
                 Analyze your site
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -124,7 +124,7 @@ export function Footer() {
           </FooterColumn>
         </div>
 
-        <div className="mt-6 flex flex-col gap-1 border-t border-slate-800 pt-4 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 flex flex-col gap-1 border-t border-slate-800 pt-5 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.</p>
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <Link href="/llms.txt" className="cursor-pointer text-slate-400 hover:text-brand-300">

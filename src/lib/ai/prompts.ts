@@ -76,6 +76,7 @@ Page title: ${i.pageTitle ?? "N/A"} | Words: ${i.wordCount ?? 0} | H1s: ${i.h1Co
 
   return `Generate expert SEO recommendations for each issue below on ${domain}.
 Return one recommendation per issue in the same order (index 0 first).
+Keep every string field to 1–2 short sentences so the full JSON fits in one response.
 
 Issues:
 ${issueList}`;

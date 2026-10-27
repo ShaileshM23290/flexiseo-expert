@@ -99,8 +99,7 @@ export function AuditUrlForm({
           "flex gap-2 sm:gap-3",
           variant === "default" && "mt-3",
           isHero &&
-            "flex-col rounded-xl border border-slate-200 bg-white p-2 shadow-sm sm:flex-row sm:items-center sm:p-2"
-        )}
+            "flex-col rounded-xl border border-slate-300 bg-white p-1.5 shadow-[0_1px_2px_rgba(15,23,42,0.05),0_12px_32px_-16px_rgba(15,23,42,0.25)] focus-within:border-brand-500 focus-within:ring-4 focus-within:ring-brand-500/10 sm:flex-row sm:items-center"        )}
       >
         <div className="relative min-w-0 flex-1">
           <Globe
@@ -130,8 +129,9 @@ export function AuditUrlForm({
         <button
           type="submit"
           className={cn(
-            "inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-brand-600 font-semibold text-white transition-colors hover:bg-brand-700",
-            isHero ? "px-6 py-3.5 text-sm sm:px-8" : "px-6 py-3 text-sm"
+            isHero
+              ? "mk-btn-primary shrink-0 rounded-lg px-6 py-3 text-sm sm:px-7"
+              : "inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
           )}
         >
           Analyze Free
@@ -142,7 +142,7 @@ export function AuditUrlForm({
       {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
 
       {isHero && !error && (
-        <p className="mt-3 text-xs text-slate-600">
+        <p className="mt-3 text-xs text-slate-500">
           Free instant audit · No signup · Results in under 2 minutes
         </p>
       )}
